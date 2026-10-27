@@ -1,0 +1,4 @@
+# Local-only demonstration account. Never set DEMO_MODE=true in production.
+DEMO_MODE=true
+# STRIPE_ENABLED and TELEGRAM_ENABLED default to false in Wrangler config.
+# Add test credentials only after explicit approval, never commit real values.

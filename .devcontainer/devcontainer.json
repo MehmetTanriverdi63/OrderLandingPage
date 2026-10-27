@@ -1,0 +1,12 @@
+{
+  "name": "Restaurant – private Browservorschau",
+  "image": "node:24-bookworm",
+  "remoteUser": "node",
+  "forwardPorts": [8787],
+  "portsAttributes": {
+    "8787": { "label": "Restaurant: Kundenansicht und /admin", "onAutoForward": "openBrowser", "protocol": "http" }
+  },
+  "otherPortsAttributes": { "onAutoForward": "ignore" },
+  "postCreateCommand": "npm ci && npm run setup && node scripts/codespaces-admin.mjs",
+  "postStartCommand": "bash .devcontainer/start.sh"
+}

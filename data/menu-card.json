@@ -1,0 +1,724 @@
+{
+  "restaurant": {
+    "name": "Mediterrane Küche am Wasserturm",
+    "address": "Friedrich-Ebert-Str. 50, 67549 Worms",
+    "phone": "06241 2107548",
+    "hours": [
+      {
+        "day": 0,
+        "open": "12:00",
+        "close": "22:00",
+        "closed": false
+      },
+      {
+        "day": 1,
+        "open": "11:30",
+        "close": "22:00",
+        "closed": false
+      },
+      {
+        "day": 2,
+        "open": "11:30",
+        "close": "22:00",
+        "closed": false
+      },
+      {
+        "day": 3,
+        "open": "11:30",
+        "close": "22:00",
+        "closed": false
+      },
+      {
+        "day": 4,
+        "open": "11:30",
+        "close": "22:00",
+        "closed": false
+      },
+      {
+        "day": 5,
+        "open": "11:30",
+        "close": "22:00",
+        "closed": false
+      },
+      {
+        "day": 6,
+        "open": "12:00",
+        "close": "22:00",
+        "closed": false
+      }
+    ]
+  },
+  "products": [
+    {
+      "number": "1",
+      "name": "Insalata Italia",
+      "price": 990,
+      "description": "Mit Thunfisch, Käse, Putenschinken, Zwiebeln, Tomaten und Ei.",
+      "category": "Salate"
+    },
+    {
+      "number": "2",
+      "name": "Insalata Mista",
+      "price": 700,
+      "description": "Mit gemischtem Salat, Tomaten, Gurken und Zwiebeln.",
+      "category": "Salate"
+    },
+    {
+      "number": "3",
+      "name": "Caprese",
+      "price": 850,
+      "description": "Mit gemischtem Salat, Tomaten, Gurken und Mozzarella.",
+      "category": "Salate"
+    },
+    {
+      "number": "4",
+      "name": "Insalata con Tacchino",
+      "price": 990,
+      "description": "Mit gemischtem Salat, Gurken, Tomaten, Zwiebeln und Putenstreifen.",
+      "category": "Salate"
+    },
+    {
+      "number": "5",
+      "name": "Insalata Mediterranea",
+      "price": 850,
+      "description": "Mit Tomaten, Gurken, Weichkäse, Oliven und Zwiebeln.",
+      "category": "Salate"
+    },
+    {
+      "number": "6",
+      "name": "Gemischter Salat mit Dönerfleisch",
+      "price": 1200,
+      "description": "Gemischter Salat mit Dönerfleisch.",
+      "category": "Salate"
+    },
+    {
+      "number": "7",
+      "name": "Peperoni mit Schafskäse überbacken",
+      "price": 990,
+      "description": "Peperoni mit Schafskäse überbacken.",
+      "category": "Salate"
+    },
+    {
+      "number": "7A",
+      "name": "Pommes überbacken",
+      "price": 990,
+      "description": "Mit Dönerfleisch, Hollandaise und Mozzarella überbacken.",
+      "category": "Salate"
+    },
+    {
+      "number": "8",
+      "name": "Döner",
+      "price": 750,
+      "description": "Drehspieß aus Kalb-Putenfleisch.",
+      "category": "Drehspieß"
+    },
+    {
+      "number": "9",
+      "name": "Döner XL",
+      "price": 1000,
+      "description": "Drehspieß aus Kalb-Putenfleisch, als XL-Portion.",
+      "category": "Drehspieß"
+    },
+    {
+      "number": "10",
+      "name": "Döner mit gegrilltem Gemüse",
+      "price": 850,
+      "description": "Mit gegrilltem Gemüse. Drehspieß aus Kalb-Putenfleisch.",
+      "category": "Drehspieß"
+    },
+    {
+      "number": "11",
+      "name": "Döner mit Weichkäse",
+      "price": 850,
+      "description": "Mit Weichkäse. Drehspieß aus Kalb-Putenfleisch.",
+      "category": "Drehspieß"
+    },
+    {
+      "number": "12",
+      "name": "Döner Box",
+      "price": 800,
+      "description": "Döner Box mit Kalb-Puten-Drehspieß.",
+      "category": "Drehspieß"
+    },
+    {
+      "number": "13",
+      "name": "Döner Teller",
+      "price": 1400,
+      "description": "Mit Pommes oder Reis und Salat.",
+      "category": "Drehspieß"
+    },
+    {
+      "number": "14",
+      "name": "Vegetarischer Döner",
+      "price": 650,
+      "description": "Mit Weichkäse.",
+      "category": "Drehspieß"
+    },
+    {
+      "number": "15",
+      "name": "Falafel Döner",
+      "price": 700,
+      "description": "Vegetarisch, mit Kichererbsen-Frikadellen.",
+      "category": "Drehspieß"
+    },
+    {
+      "number": "16",
+      "name": "Falafelteller",
+      "price": 1190,
+      "description": "Vegetarisch, mit Pommes oder Reis und Salat.",
+      "category": "Drehspieß"
+    },
+    {
+      "number": "16A",
+      "name": "Yufka Falafel",
+      "price": 750,
+      "description": "Yufka mit Falafel.",
+      "category": "Drehspieß"
+    },
+    {
+      "number": "17",
+      "name": "Yufka Döner",
+      "price": 850,
+      "description": "Yufka mit Kalb-Puten-Drehspieß.",
+      "category": "Drehspieß"
+    },
+    {
+      "number": "18",
+      "name": "Yufka Döner XL",
+      "price": 1050,
+      "description": "Yufka mit Kalb-Puten-Drehspieß, als XL-Portion.",
+      "category": "Drehspieß"
+    },
+    {
+      "number": "19",
+      "name": "Lahmacun mit Salat",
+      "price": 700,
+      "description": "Lahmacun mit Salat.",
+      "category": "Drehspieß"
+    },
+    {
+      "number": "20",
+      "name": "Lahmacun mit Dönerfleisch",
+      "price": 900,
+      "description": "Mit Salat und Dönerfleisch.",
+      "category": "Drehspieß"
+    },
+    {
+      "number": "21",
+      "name": "Pizza Pane",
+      "price": 490,
+      "description": "Pizzabrot mit oder ohne Knoblauch.",
+      "category": "Pizza"
+    },
+    {
+      "number": "22",
+      "name": "Pizza Pane Spezial",
+      "price": 950,
+      "description": "Mit frischen Tomaten, Knoblauch, Basilikum, Rucola und Parmesan.",
+      "category": "Pizza"
+    },
+    {
+      "number": "22A",
+      "name": "Pizza Spargel",
+      "price": 1150,
+      "description": "Mit Schinken, Spargel und Hollandaise.",
+      "category": "Pizza"
+    },
+    {
+      "number": "23",
+      "name": "Pizza Margherita",
+      "price": 950,
+      "description": "Pizza Margherita.",
+      "category": "Pizza"
+    },
+    {
+      "number": "23A",
+      "name": "Pizza Hawai",
+      "price": 1100,
+      "description": "Mit Schinken und Ananas.",
+      "category": "Pizza"
+    },
+    {
+      "number": "24",
+      "name": "Pizza Salami",
+      "price": 1050,
+      "description": "Pizza Salami.",
+      "category": "Pizza"
+    },
+    {
+      "number": "25",
+      "name": "Pizza Tonno",
+      "price": 1090,
+      "description": "Mit Thunfisch und Zwiebeln.",
+      "category": "Pizza"
+    },
+    {
+      "number": "26",
+      "name": "Pizza Mista",
+      "price": 1090,
+      "description": "Mit Rindersalami, Putenschinken und Champignons.",
+      "category": "Pizza"
+    },
+    {
+      "number": "27",
+      "name": "Pizza Diavola",
+      "price": 1190,
+      "description": "Mit Parmesankäse, Zwiebeln, Jalapeños und Peperoniwurst.",
+      "category": "Pizza"
+    },
+    {
+      "number": "27A",
+      "name": "Pizza Napoli",
+      "price": 1200,
+      "description": "Mit Thunfisch, Sardellen und Kapern.",
+      "category": "Pizza"
+    },
+    {
+      "number": "28",
+      "name": "Pizza Caspricciosa",
+      "price": 1150,
+      "description": "Mit Champignons, Putenschinken und Artischocken.",
+      "category": "Pizza"
+    },
+    {
+      "number": "29",
+      "name": "Pizza Mare",
+      "price": 1390,
+      "description": "Mit Meeresfrüchten.",
+      "category": "Pizza"
+    },
+    {
+      "number": "30",
+      "name": "Pizza Quattro Stagioni",
+      "price": 1190,
+      "description": "Vier Jahreszeiten.",
+      "category": "Pizza"
+    },
+    {
+      "number": "30A",
+      "name": "Pizza Worms",
+      "price": 1300,
+      "description": "Mit Salami, Schinken, Champignons, Artischocken, Spargel und Knoblauch.",
+      "category": "Pizza"
+    },
+    {
+      "number": "31",
+      "name": "Pizza Calzone Döner",
+      "price": 1250,
+      "description": "Mit Dönerfleisch und Zwiebeln.",
+      "category": "Pizza"
+    },
+    {
+      "number": "31A",
+      "name": "Kaperna",
+      "price": 1250,
+      "description": "Mit Sardellen, Kapern, Artischocken und Knoblauch.",
+      "category": "Pizza"
+    },
+    {
+      "number": "32",
+      "name": "Pizza Calzone",
+      "price": 1150,
+      "description": "Mit Putenschinken, Rindersalami und Champignons.",
+      "category": "Pizza"
+    },
+    {
+      "number": "33",
+      "name": "Pizza Mediterran",
+      "price": 1190,
+      "description": "Mit Schmand, Käse, Dönerfleisch und Zwiebeln.",
+      "category": "Pizza"
+    },
+    {
+      "number": "33A",
+      "name": "Pizza Wasserturm",
+      "price": 1250,
+      "description": "Mit Peperoni, Wurst, Zwiebeln, Jalapeños und Hollandaise.",
+      "category": "Pizza"
+    },
+    {
+      "number": "34",
+      "name": "Pizza Döner",
+      "price": 1190,
+      "description": "Mit Dönerfleisch und Zwiebeln.",
+      "category": "Pizza"
+    },
+    {
+      "number": "34A",
+      "name": "Pizza Chipola",
+      "price": 1250,
+      "description": "Mit Salami, Schinken, Zwiebeln und Paprika.",
+      "category": "Pizza"
+    },
+    {
+      "number": "35",
+      "name": "Pizza Broccoli",
+      "price": 1090,
+      "description": "Mit Käse, Brokkoli und Gorgonzola.",
+      "category": "Pizza"
+    },
+    {
+      "number": "36",
+      "name": "Pizza Verdura",
+      "price": 1200,
+      "description": "Mit Gemüse und Knoblauch.",
+      "category": "Pizza"
+    },
+    {
+      "number": "37",
+      "name": "Pizza Sucuk Funghi",
+      "price": 1190,
+      "description": "Mit Sucuk und Champignons.",
+      "category": "Pizza"
+    },
+    {
+      "number": "38",
+      "name": "Pizza Hollandaise",
+      "price": 1190,
+      "description": "Mit Hollandaise, Zwiebeln und Dönerfleisch.",
+      "category": "Pizza"
+    },
+    {
+      "number": "38A",
+      "name": "Pizza Funghi",
+      "price": 1050,
+      "description": "Mit Champignons.",
+      "category": "Pizza"
+    },
+    {
+      "number": "39",
+      "name": "Spaghetti",
+      "price": 850,
+      "description": "Mit Tomatensoße und Basilikum.",
+      "category": "Pasta"
+    },
+    {
+      "number": "40",
+      "name": "Spaghetti Bolognese",
+      "price": 950,
+      "description": "Mit Tomatensoße und Hackfleisch.",
+      "category": "Pasta"
+    },
+    {
+      "number": "41",
+      "name": "Spaghetti Aglio e Peperonico",
+      "price": 990,
+      "description": "Mit Knoblauch, Chili, Tomaten und Petersilie.",
+      "category": "Pasta"
+    },
+    {
+      "number": "42",
+      "name": "Spaghetti Carbonara",
+      "price": 1090,
+      "description": "Mit Sahnesoße, Parmesan, Ei und Putenschinken.",
+      "category": "Pasta"
+    },
+    {
+      "number": "43",
+      "name": "Spaghetti Tonno",
+      "price": 1090,
+      "description": "Mit Thunfisch, Knoblauch und Basilikum.",
+      "category": "Pasta"
+    },
+    {
+      "number": "44",
+      "name": "Spaghetti Frutti di Mare",
+      "price": 1390,
+      "description": "Mit Meeresfrüchten.",
+      "category": "Pasta"
+    },
+    {
+      "number": "45",
+      "name": "Penne ala Verdura",
+      "price": 1090,
+      "description": "Mit Gemüse.",
+      "category": "Pasta"
+    },
+    {
+      "number": "46",
+      "name": "Penne Arabiata",
+      "price": 990,
+      "description": "Penne Arabiata.",
+      "category": "Pasta"
+    },
+    {
+      "number": "47",
+      "name": "Penne Gorgonzola",
+      "price": 1090,
+      "description": "Penne mit Gorgonzola.",
+      "category": "Pasta"
+    },
+    {
+      "number": "48",
+      "name": "Penne Paesana",
+      "price": 1190,
+      "description": "Mit Tomaten-Sahnesoße, Putenschinken, Champignons und Erbsen.",
+      "category": "Pasta"
+    },
+    {
+      "number": "48A",
+      "name": "Penne Shrimps",
+      "price": 1190,
+      "description": "Mit Zucchini, Shrimps, Champignons und Kurkuma.",
+      "category": "Pasta"
+    },
+    {
+      "number": "49",
+      "name": "Penne Melansana",
+      "price": 1090,
+      "description": "Mit Aubergine und Tomaten-Sahnesoße.",
+      "category": "Pasta"
+    },
+    {
+      "number": "49A",
+      "name": "Penne Pollo",
+      "price": 1090,
+      "description": "Mit Sahnesoße, Hähnchenbrust, Champignons, Paprika und Kurkuma.",
+      "category": "Pasta"
+    },
+    {
+      "number": "50",
+      "name": "Penne Mediterran",
+      "price": 1190,
+      "description": "Mit Sahnesoße, Hähnchenbrust und Champignons.",
+      "category": "Pasta"
+    },
+    {
+      "number": "51",
+      "name": "Polo al Forno",
+      "price": 1290,
+      "description": "Penne mit Bolognese-Sahnesoße, Champignons und Hähnchenbrust, mit Käse überbacken.",
+      "category": "Pasta"
+    },
+    {
+      "number": "52",
+      "name": "Döner al Forno",
+      "price": 1290,
+      "description": "Penne mit Bolognese-Sahnesoße, Dönerfleisch, Knoblauch und Brokkoli, mit Käse überbacken.",
+      "category": "Pasta"
+    },
+    {
+      "number": "53",
+      "name": "Tagliatella Döner",
+      "price": 1190,
+      "description": "Mit Tomaten-Sahnesoße, Brokkoli, Dönerfleisch und Knoblauch, leicht pikant.",
+      "category": "Pasta"
+    },
+    {
+      "number": "53A",
+      "name": "Tagliatelle Hollandaise",
+      "price": 1150,
+      "description": "Mit Zucchini, Brokkoli, Spargel und Hollandaise.",
+      "category": "Pasta"
+    },
+    {
+      "number": "54",
+      "name": "Tagliatella Maremonte",
+      "price": 1290,
+      "description": "Mit Tomaten-Sahnesoße, Champignons, Shrimps, Knoblauch und Zwiebeln.",
+      "category": "Pasta"
+    },
+    {
+      "number": "55",
+      "name": "Tagliatella Adriatico",
+      "price": 1290,
+      "description": "Mit Sahnesoße und Lachs.",
+      "category": "Pasta"
+    },
+    {
+      "number": "56",
+      "name": "Tortellini Paesana",
+      "price": 1190,
+      "description": "Mit Tomaten-Sahnesoße, Schinken, Champignons und Erbsen.",
+      "category": "Pasta"
+    },
+    {
+      "number": "57",
+      "name": "Tortellini alla Panna",
+      "price": 1090,
+      "description": "Mit Sahnesoße, Putenschinken, Ricotta und Spinatfüllung.",
+      "category": "Pasta"
+    },
+    {
+      "number": "58",
+      "name": "Tortellini al Forno",
+      "price": 1190,
+      "description": "Mit Bolognese-Sahnesoße und Mozzarella überbacken.",
+      "category": "Pasta"
+    },
+    {
+      "number": "59",
+      "name": "Combinazione",
+      "price": 1190,
+      "description": "Drei verschiedene Nudelsorten mit Käse überbacken.",
+      "category": "Pasta"
+    },
+    {
+      "number": "60",
+      "name": "Gnocchi mit Tomaten und Mozzarella",
+      "price": 1190,
+      "description": "Mit Sahnesoße, Tomaten und Mozzarella überbacken.",
+      "category": "Pasta"
+    },
+    {
+      "number": "61",
+      "name": "Gnocchi Gorgonzola",
+      "price": 990,
+      "description": "Mit Gorgonzola.",
+      "category": "Pasta"
+    },
+    {
+      "number": "70",
+      "name": "Pide Käse",
+      "price": 950,
+      "description": "Mit Schafskäse und Mozzarella.",
+      "category": "Pide"
+    },
+    {
+      "number": "71",
+      "name": "Pide Hackfleisch",
+      "price": 1050,
+      "description": "Mit Hackfleisch und Käse.",
+      "category": "Pide"
+    },
+    {
+      "number": "72",
+      "name": "Pide Spinat",
+      "price": 1000,
+      "description": "Mit Spinat, Ei und Käse.",
+      "category": "Pide"
+    },
+    {
+      "number": "73",
+      "name": "Pide Sucuk",
+      "price": 1100,
+      "description": "Mit Knoblauchwurst und Käse.",
+      "category": "Pide"
+    },
+    {
+      "number": "74",
+      "name": "Pide Vegetarisch",
+      "price": 1100,
+      "description": "Mit Paprika, Brokkoli, Zwiebeln und Champignons.",
+      "category": "Pide"
+    },
+    {
+      "number": "75",
+      "name": "Pide Kebab",
+      "price": 1100,
+      "description": "Mit Dönerfleisch, Zwiebeln und Käse.",
+      "category": "Pide"
+    },
+    {
+      "number": "76",
+      "name": "Schnitzel Wiener Art",
+      "price": 1200,
+      "description": "Mit Salat und Pommes.",
+      "category": "Schnitzel"
+    },
+    {
+      "number": "77",
+      "name": "Schnitzel Rahmsoße",
+      "price": 1300,
+      "description": "Mit Champignons. Dazu Salat und Pommes.",
+      "category": "Schnitzel"
+    },
+    {
+      "number": "78",
+      "name": "Schnitzel Zigeuner Art",
+      "price": 1400,
+      "description": "Mit Champignons, Paprika und Zwiebeln. Dazu Salat und Pommes.",
+      "category": "Schnitzel"
+    },
+    {
+      "number": "79",
+      "name": "Schnitzel Bolognese",
+      "price": 1500,
+      "description": "Mit Hackfleisch, Tomaten, Sahnesoße und Käse überbacken. Dazu Salat und Pommes.",
+      "category": "Schnitzel"
+    },
+    {
+      "number": "E1",
+      "name": "Knusprige Pommes",
+      "price": 450,
+      "description": "Portion Pommes.",
+      "category": "Beilagen & Snacks"
+    },
+    {
+      "number": "E2",
+      "name": "Reis",
+      "price": 450,
+      "description": "Portion Reis.",
+      "category": "Beilagen & Snacks"
+    },
+    {
+      "number": "E3",
+      "name": "Chicken Wings",
+      "price": 650,
+      "description": "6 Stück. Auf Wunsch mit Pommes für insgesamt 9,00 €.",
+      "category": "Beilagen & Snacks"
+    },
+    {
+      "number": "E4",
+      "name": "Chicken Nuggets",
+      "price": 650,
+      "description": "6 Stück. Auf Wunsch mit Pommes für insgesamt 9,00 €.",
+      "category": "Beilagen & Snacks"
+    }
+  ],
+  "extras": [
+    {
+      "id": "sardellen",
+      "name": "Sardellen",
+      "price": 200
+    },
+    {
+      "id": "artischocken",
+      "name": "Artischocken",
+      "price": 200
+    },
+    {
+      "id": "champignons",
+      "name": "Champignons",
+      "price": 200
+    },
+    {
+      "id": "mozzarella",
+      "name": "Mozzarella",
+      "price": 200
+    },
+    {
+      "id": "thunfisch",
+      "name": "Thunfisch",
+      "price": 200
+    },
+    {
+      "id": "feta",
+      "name": "Feta-Käse",
+      "price": 200
+    },
+    {
+      "id": "gorgonzola",
+      "name": "Gorgonzola",
+      "price": 200
+    },
+    {
+      "id": "fleisch",
+      "name": "Extra Dönerfleisch",
+      "price": 290
+    },
+    {
+      "id": "parmesan",
+      "name": "Extra Parmesan",
+      "price": 260
+    }
+  ],
+  "notes": [
+    "44: Preis vom Betreiber im Chat auf 13,90 Euro korrigiert und bestätigt.",
+    "20: Beschreibung im zusätzlichen Gesamtfoto lesbar: mit Salat und Dönerfleisch.",
+    "Die Allergen-/Zusatzstofflegende fehlt. Keine Zuordnung aus Buchstaben oder Zutaten abgeleitet.",
+    "Keine Pizzagrößen oder Getränkepreise auf den Fotos.",
+    "9,90-Euro-Instagram-Menü und Soßen-/Getränkeauswahl aus dem ursprünglichen Projekt beibehalten, nicht aus der Karte abgeleitet.",
+    "Extras-Bezeichnung Funghi steht zusätzlich zu Champignons mit 2,00 Euro auf der Karte; kein doppeltes Extra angelegt."
+  ]
+}

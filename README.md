@@ -18,7 +18,7 @@ Der Startbefehl betreibt Vite auf Port 5173 und die lokale Worker-/D1-API auf Po
 
 ## Enthalten
 
-- Mobile Landingpage mit Instagram-Menü für anfänglich 9,90 €, Kategorien, lokalen Beispielbildern, Soßen, Extras und Getränken.
+- Mobile Landingpage mit separatem Instagram-Menü für 9,90 €, 88 übertragenen Kartenpositionen, Nummernsuche, Kategorien und lokalen Beispielbildern.
 - Persistenter Warenkorb, centgenaue Preise, Gast-Checkout und Barzahlung bei Abholung.
 - Öffnungszeitabhängige Abholslots, private Bestellbestätigung und Statusverfolgung.
 - Geschütztes Dashboard: Bestellungen annehmen/ablehnen, Abholzeit bestätigen, Zubereitung/Abholung dokumentieren.
@@ -48,3 +48,21 @@ Browser: Der Tool-Wrapper nutzt `/usr/bin/chromium`, falls vorhanden. Andernfall
 Noch nicht veröffentlicht. [Betrieb und notwendige Kontoeinstellungen](docs/BETRIEB.md) beschreibt Cloudflare Pages (Standard), den alternativen eigenständigen Worker und die optionalen Integrationen. Für einen öffentlichen Pilotbetrieb müssen Restaurant-/Pflichtangaben und Allergene vervollständigt werden.
 
 [Implementierungsplan](docs/IMPLEMENTIERUNGSPLAN.md) · [Architektur und API](docs/ARCHITEKTUR.md)
+
+## Speisekarte nach den bereitgestellten Fotos
+
+88 Kartenpositionen plus das separate Instagram-Angebot. Kategorien: Salate, Drehspieß, Pizza, Pasta, Pide, Schnitzel und Beilagen/Snacks. Gerichtnummern, Kontakt und Öffnungszeiten stammen aus den Fotos; Nr.44 wurde vom Betreiber mit **13,90 €** bestätigt. Die Allergen-/Zusatzstofflegende fehlt noch. Produktfotos bleiben illustrative Beispiele; neue Kategorien verwenden bewusst Symbole.
+
+Die prüfbare Übertragung liegt in `data/menu-card.json`. `0004_menu_card.sql` ersetzt die bisherigen Demo-Gerichte und ergänzt das Sortiment ausschließlich für `mediterrane-worms`; `0005_confirmed_frutti_di_mare.sql` ergänzt den bestätigten Preis von Nr.44. Alte Bestellungen behalten ihre gespeicherten Preise. Das alte frei erfundene Einzelgetränk Ayran wird deaktiviert; die Getränkeauswahl des separaten Projektangebots bleibt bestehen.
+
+### Bestehenden Codespace aktualisieren
+
+Den laufenden Server im Terminal mit **Strg+C** beenden, dann:
+
+```bash
+git pull --ff-only
+npm run setup
+npm run preview -- --ip 0.0.0.0
+```
+
+Danach den privaten Port **8787** im normalen Browser öffnen und die Seite neu laden. `npm run setup` baut das Frontend und aktualisiert die lokale D1-Datenbank, ohne gespeicherte Bestellungen zu löschen. Keine Remote-Datenbank und keine produktive Integration wird aktiviert. Falls `git pull` lokale Änderungen meldet, diese erhalten und den Konflikt klären; keinen erzwungenen Reset verwenden.

@@ -1,8 +1,9 @@
 import { z } from 'zod';
 export const RESTAURANT = 'mediterrane-worms';
+export const INSTAGRAM_URL = 'https://www.instagram.com/mediterranekucheworms/';
 export type Choice = { id: string; name: string; price: number };
 export type OptionGroup = { id: string; name: string; required: boolean; choices: Choice[] };
-export type Product = { id: string; restaurant_id: string; name: string; description: string; category: string; price: number; image: string; badge: string | null; available: number; options: OptionGroup[] };
+export type Product = { menu_number?: string | null; id: string; restaurant_id: string; name: string; description: string; category: string; price: number; image: string; badge: string | null; available: number; options: OptionGroup[] };
 export type CartItem = { productId: string; quantity: number; selections: Record<string, string>; product?: Product };
 export type Hours = { day: number; open: string; close: string; closed: boolean }[];
 export type OrderItem = { name: string; quantity: number; unitPrice: number; selections: string[] };

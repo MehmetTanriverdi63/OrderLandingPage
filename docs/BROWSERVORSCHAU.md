@@ -17,3 +17,17 @@ Die vorbereitete `.devcontainer/devcontainer.json` installiert und startet die A
 Es wird kein Cloudflare-Deployment durchgeführt, kein öffentlicher Tunnel angelegt und keine Zahlungs- oder Telegram-Integration aktiviert. Die Codespaces-Konfiguration ist vorbereitet, aber noch nicht in einem tatsächlich angelegten Codespace ausgeführt worden.
 
 Wenn die Vorschau nach einem Neustart nicht automatisch läuft: Im Codespaces-Terminal `bash .devcontainer/start.sh` ausführen. Bei der ersten Einrichtung stehen Fehlerdetails im Terminal, spätere Serverlogs in `.cache/codespaces-preview.log`.
+
+## Ersteinrichtung bleibt bei `npm run db:local` hängen
+
+Wenn Installation und Build beendet sind, aber `wrangler d1 migrations apply orders-db --local` lange ohne Fortschritt läuft, ist der lokale D1-Schritt blockiert. Eine interaktive Bestätigungsfrage im Lifecycle-Terminal ist eine mögliche Ursache, nicht allein aus einer Prozessliste beweisbar. Der Tool-Wrapper erzwingt deshalb nur für explizit lokale D1-Aufrufe `CI=true`, schließt deren Standardeingabe und begrenzt die Laufzeit auf 120 Sekunden. Remote-Datenbanken und Deployments behalten ihre bisherigen interaktiven Bestätigungen.
+
+In einem zweiten Bash-Terminal des eigenen Codespaces den hängenden lokalen Migrationsaufruf gezielt stoppen (keine VS-Code-/Editorprozesse beenden):
+
+```bash
+pkill -TERM -f '[w]rangler.*d1 migrations apply orders-db --local'
+git pull --ff-only
+npm run db:local && node scripts/codespaces-admin.mjs && npm run preview -- --ip 0.0.0.0
+```
+
+Die Migrationen sind wiederholbar und ihre Anwendung wird in D1 verzeichnet. Dieser Schritt löscht die Datenbank nicht. Er nutzt den schon fertigen Build, richtet den privaten Vorschau-Admin ein und startet die Vorschau nur bei Erfolg. Falls das Zwei-Minuten-Limit erneut erreicht wird, die letzte angezeigte Wrangler-Fehlermeldung prüfen; weitere Ursachen wie ein Laufzeit- oder Speicherproblem sind damit nicht ausgeschlossen. Keine zweite Migration parallel starten.

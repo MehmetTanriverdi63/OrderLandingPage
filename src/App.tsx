@@ -5,6 +5,7 @@ import { api, readStorage, writeStorage } from './lib/api';
 import Modal from './components/Modal';
 import FoodImage from './components/FoodImage';
 import MenuSection from './components/MenuSection';
+import { useSectionNavigation } from './hooks/useSectionNavigation';
 const Admin = lazy(() => import('./components/Admin'));
 type Menu = { restaurant: { id: string; name: string; address: string; phone: string; hours: Hours }; products: Product[]; pickupSlots: string[]; stripeEnabled: boolean; demo: boolean };
 type Receipt = { id: string; token: string; number?: number; total?: number; paymentUrl?: string };
@@ -17,6 +18,7 @@ export default function App() {
   const [receipt, setReceipt] = useState<Receipt | null>(() => { const p = new URLSearchParams(location.search); return p.get('order') && p.get('token') ? { id: p.get('order')!, token: p.get('token')! } : null; });
   const [showTracking, setShowTracking] = useState(!!receipt);
   const isAdmin = location.pathname.startsWith('/admin');
+  useSectionNavigation(!isAdmin, menu !== null);
   async function load() { try { const data = await api<Menu>(`/menu?restaurant=${RESTAURANT}`); setMenu(data); setError(''); } catch (e) { setError((e as Error).message); } }
   useEffect(() => { void load(); }, [retry]);
   useEffect(() => { writeStorage('mediterrane-cart', cart); }, [cart]);

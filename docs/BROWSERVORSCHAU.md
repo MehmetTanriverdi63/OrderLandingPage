@@ -65,3 +65,9 @@ Nach ausdrücklicher Freigabe im Codespace `node scripts/telegram-test.mjs DEINE
 Nach Freigabe `node scripts/enable-telegram.mjs DEINE_CHAT_ID` ausführen. Der Befehl prüft den vorhandenen Token und vergleicht die angegebene Chat-ID mit der Restaurantzuordnung in der lokalen D1-Datenbank. Nur bei Übereinstimmung wird `TELEGRAM_ENABLED=true` in der ignorierten lokalen `.dev.vars` gesetzt. Andere Variablen, insbesondere Stripe, bleiben erhalten. Cloudflare-Produktion wird nicht geändert.
 
 Anschließend den Vorschau-Server neu starten und eine **neue** Bar-Testbestellung absenden. Sie erscheint wie bisher im Dashboard und wird zusätzlich an Telegram gesendet. Alte Bestellungen werden nicht nachträglich versendet. Bei Stripe erfolgt der Versand erst nach signierter Testzahlungsbestätigung. Ein gestoppter Codespace verarbeitet keine neuen Bestellungen. Der zusätzliche Telegram-Versand ist ohne dauerhafte Zustellwarteschlange; bei API-Fehlern bleibt die Bestellung im Dashboard verfügbar und ein Fehler erscheint im Serverlog.
+
+## Direktlink zum Instagram-Angebot
+
+An die aktuelle Vorschau- bzw. spätere Website-Adresse `/#angebot` anhängen. React richtet den Abschnitt nach dem Rendern und dem initialen Laden von Schriften/Inhalten unterhalb des fixierten Headers aus. Direkter Erstaufruf, Neuladen und Klick auf „Jetzt entdecken“ sind auf Mobil/Desktop geprüft. Manuelles Scrollen unterbricht verspätete automatische Ausrichtungen. Die Hauptseite ohne Fragment öffnet weiterhin normal am Anfang. Andere unterstützte Abschnitte: `#speisekarte`, `#so-gehts`, `#restaurant`.
+
+Nach einem Code-Update den Produktionsbuild im Codespace mit `npm run build` erneuern und den Vorschau-Server neu starten; ein laufender Server mit altem `dist` enthält die Korrektur noch nicht. Die private Codespaces-Anmeldung bleibt Voraussetzung für den Vorschau-Link.

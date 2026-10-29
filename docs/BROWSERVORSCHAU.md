@@ -55,3 +55,7 @@ node scripts/configure-telegram.mjs DEINE_CHAT_ID
 Der Token wird aus einer vorhandenen Prozessvariable oder `.dev.vars` wiederverwendet; andernfalls fragt der Befehl ihn unsichtbar ab. Er prüft den Empfänger mit dem lesenden Telegram-Aufruf `getChat`, ordnet die Chat-ID dem Pilotrestaurant in der lokalen D1-Datenbank zu und speichert den Token ausschließlich in der von Git ausgeschlossenen `.dev.vars` mit Dateimodus 600. Andere Einstellungen bleiben erhalten. `TELEGRAM_ENABLED` wird ausdrücklich auf `false` gesetzt. Kein `sendMessage`-Aufruf und keine Bestellung wird ausgelöst. Den Token weder in Git noch im Chat teilen.
 
 Der Versand einer einzelnen Testnachricht und die Aktivierung von Bestellbenachrichtigungen sind getrennte nächste Schritte nach Freigabe. Diese Einrichtung betrifft nur den eigenen Codespace; Cloudflare-Produktion wird nicht geändert.
+
+### Eine freigegebene Telegram-Testnachricht
+
+Nach ausdrücklicher Freigabe im Codespace `node scripts/telegram-test.mjs DEINE_CHAT_ID` ausführen. Das sendet eine als Test gekennzeichnete Nachricht mit dem gespeicherten Token. `.dev.vars`, Bestellungen und das Aktivierungsflag bleiben unverändert. Ein lokaler Beleg unter `.cache/telegram-test-*.json` verhindert Wiederholungen für denselben Bot und Empfänger. Bei Zeitüberschreitung bleibt der Zustellstatus unklar; zuerst Telegram prüfen, nicht blind erneut senden. Der Test aktiviert keinen dauerhaften Bestellversand.

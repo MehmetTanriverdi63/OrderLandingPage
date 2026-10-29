@@ -43,3 +43,15 @@ node scripts/codespaces-admin.mjs Amedspor21
 Der Befehl fragt das Passwort im Terminal unsichtbar ab. Er ändert ausschließlich den bekannten Vorschau-Admin in der **lokalen** D1-Datenbank und meldet dessen alte Sitzungen ab. Restaurantdaten und andere Admins bleiben erhalten. Die Anmeldung akzeptiert anschließend Benutzername oder E-Mail; Groß-/Kleinschreibung des Benutzernamens ist unerheblich. Das Passwort wird nicht im Git-Verlauf abgelegt. In `.cache/codespaces-admin.json` bleibt es wie beim ursprünglichen Vorschau-Admin nur lokal für den Codespace-Besitzer lesbar gespeichert; `.cache/` ist von Git ausgeschlossen. Automatische Wiederholung ohne Benutzernamen erhält die zuletzt gesetzten Zugangsdaten.
 
 Vierstellige Passwörter sind hier nur für den privaten Testbetrieb vorgesehen. Für einen öffentlich betriebenen Dienst weiterhin `scripts/create-admin.mjs` mit mindestens zwölf Zeichen verwenden.
+
+## Telegram-Empfänger vorbereiten, noch ohne Versand
+
+Nachdem der Inhaber dem Bot `/start` gesendet hat, `scripts/telegram-chat-id.mjs` verwenden. Anschließend im eigenen Codespace:
+
+```bash
+node scripts/configure-telegram.mjs DEINE_CHAT_ID
+```
+
+Der Token wird aus einer vorhandenen Prozessvariable oder `.dev.vars` wiederverwendet; andernfalls fragt der Befehl ihn unsichtbar ab. Er prüft den Empfänger mit dem lesenden Telegram-Aufruf `getChat`, ordnet die Chat-ID dem Pilotrestaurant in der lokalen D1-Datenbank zu und speichert den Token ausschließlich in der von Git ausgeschlossenen `.dev.vars` mit Dateimodus 600. Andere Einstellungen bleiben erhalten. `TELEGRAM_ENABLED` wird ausdrücklich auf `false` gesetzt. Kein `sendMessage`-Aufruf und keine Bestellung wird ausgelöst. Den Token weder in Git noch im Chat teilen.
+
+Der Versand einer einzelnen Testnachricht und die Aktivierung von Bestellbenachrichtigungen sind getrennte nächste Schritte nach Freigabe. Diese Einrichtung betrifft nur den eigenen Codespace; Cloudflare-Produktion wird nicht geändert.

@@ -31,3 +31,15 @@ npm run db:local && node scripts/codespaces-admin.mjs && npm run preview -- --ip
 ```
 
 Die Migrationen sind wiederholbar und ihre Anwendung wird in D1 verzeichnet. Dieser Schritt löscht die Datenbank nicht. Er nutzt den schon fertigen Build, richtet den privaten Vorschau-Admin ein und startet die Vorschau nur bei Erfolg. Falls das Zwei-Minuten-Limit erneut erreicht wird, die letzte angezeigte Wrangler-Fehlermeldung prüfen; weitere Ursachen wie ein Laufzeit- oder Speicherproblem sind damit nicht ausgeschlossen. Keine zweite Migration parallel starten.
+
+## Eigenen Vorschau-Benutzernamen und Passwort setzen
+
+Im privaten Codespace kann der automatisch angelegte Vorschau-Admin umbenannt werden, z. B.:
+
+```bash
+node scripts/codespaces-admin.mjs Amedspor21
+```
+
+Der Befehl fragt das Passwort im Terminal unsichtbar ab. Er ändert ausschließlich den bekannten Vorschau-Admin in der **lokalen** D1-Datenbank und meldet dessen alte Sitzungen ab. Restaurantdaten und andere Admins bleiben erhalten. Die Anmeldung akzeptiert anschließend Benutzername oder E-Mail; Groß-/Kleinschreibung des Benutzernamens ist unerheblich. Das Passwort wird nicht im Git-Verlauf abgelegt. In `.cache/codespaces-admin.json` bleibt es wie beim ursprünglichen Vorschau-Admin nur lokal für den Codespace-Besitzer lesbar gespeichert; `.cache/` ist von Git ausgeschlossen. Automatische Wiederholung ohne Benutzernamen erhält die zuletzt gesetzten Zugangsdaten.
+
+Vierstellige Passwörter sind hier nur für den privaten Testbetrieb vorgesehen. Für einen öffentlich betriebenen Dienst weiterhin `scripts/create-admin.mjs` mit mindestens zwölf Zeichen verwenden.

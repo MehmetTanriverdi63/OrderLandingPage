@@ -1,4 +1,5 @@
 import { z } from 'zod';
+export const loginNameSchema = z.string().trim().min(3).max(200).refine(value => z.string().email().safeParse(value).success || /^[A-Za-z][A-Za-z0-9._-]{2,59}$/.test(value), 'Bitte einen Benutzernamen oder eine gültige E-Mail-Adresse eingeben.');
 export const RESTAURANT = 'mediterrane-worms';
 export const INSTAGRAM_URL = 'https://www.instagram.com/mediterranekucheworms/';
 export type Choice = { id: string; name: string; price: number };

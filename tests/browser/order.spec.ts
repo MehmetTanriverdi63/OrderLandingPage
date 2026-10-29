@@ -22,7 +22,7 @@ test('Instagram deal → extras → cash checkout → private status → restaur
   await expect(page.getByText('Deine Bestellung ist angekommen.', { exact: true })).toBeVisible();
   const trackingUrl = page.url();
   const admin = await context.newPage(); await admin.goto('/admin');
-  await admin.getByLabel('E-Mail', { exact: true }).fill('demo@mediterrane.local');
+  await admin.getByLabel('Benutzername oder E-Mail', { exact: true }).fill('demo@mediterrane.local');
   await admin.getByLabel('Passwort', { exact: true }).fill('Demo-2026!');
   await admin.getByRole('button', { name: 'Anmelden', exact: true }).click();
   await expect(admin.getByRole('heading', { name: 'Deine Bestellungen' })).toBeVisible();

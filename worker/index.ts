@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { calculateItem, checkoutSchema, hoursSchema, pickupSlots, type Product, type Hours, type Order } from '../shared/model';
+import { calculateItem, loginNameSchema, checkoutSchema, hoursSchema, pickupSlots, type Product, type Hours, type Order } from '../shared/model';
 import { equal, sha256, verifyPassword, verifyStripeSignature } from './security';
 export interface Env { DB: D1Database; ASSETS: Fetcher; DEMO_MODE?: string; STRIPE_ENABLED?: string; STRIPE_SECRET_KEY?: string; STRIPE_WEBHOOK_SECRET?: string; TELEGRAM_ENABLED?: string; TELEGRAM_BOT_TOKEN?: string }
 class HttpError extends Error { constructor(public status: number, message: string) { super(message); } }
@@ -119,9 +119,9 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
   }
   if (path === '/api/admin/login' && method === 'POST') {
     await limit(env, `login:${req.headers.get('CF-Connecting-IP') || 'local'}`, 12, 15, 'login_attempts');
-    const { email, password } = z.object({ email: z.string().email().max(200), password: z.string().min(1).max(200) }).parse(await body(req));
+    const { email, password } = z.object({ email: loginNameSchema, password: z.string().min(1).max(200) }).parse(await body(req));
     const a = await env.DB.prepare('SELECT * FROM admins WHERE email=?').bind(email.toLowerCase()).first<{ id: string; password_hash: string; demo: number }>();
-    if (!a || (a.demo && !demoAllowed(req, env)) || !await verifyPassword(password, a.password_hash)) fail(401, 'E-Mail oder Passwort ist nicht korrekt.');
+    if (!a || (a.demo && !demoAllowed(req, env)) || !await verifyPassword(password, a.password_hash)) fail(401, 'Benutzername/E-Mail oder Passwort ist nicht korrekt.');
     const token = crypto.randomUUID() + crypto.randomUUID();
     await env.DB.prepare('INSERT INTO sessions(token_hash,admin_id,expires_at) VALUES (?,?,?)').bind(await sha256(token), a!.id, Date.now() + 12 * 3600_000).run();
     return json({ ok: true }, 200, { 'Set-Cookie': `session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=43200${local(req) ? '' : '; Secure'}` });

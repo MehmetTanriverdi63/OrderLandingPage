@@ -59,3 +59,9 @@ Der Versand einer einzelnen Testnachricht und die Aktivierung von Bestellbenachr
 ### Eine freigegebene Telegram-Testnachricht
 
 Nach ausdrücklicher Freigabe im Codespace `node scripts/telegram-test.mjs DEINE_CHAT_ID` ausführen. Das sendet eine als Test gekennzeichnete Nachricht mit dem gespeicherten Token. `.dev.vars`, Bestellungen und das Aktivierungsflag bleiben unverändert. Ein lokaler Beleg unter `.cache/telegram-test-*.json` verhindert Wiederholungen für denselben Bot und Empfänger. Bei Zeitüberschreitung bleibt der Zustellstatus unklar; zuerst Telegram prüfen, nicht blind erneut senden. Der Test aktiviert keinen dauerhaften Bestellversand.
+
+### Bestellbenachrichtigungen im privaten Codespace einschalten
+
+Nach Freigabe `node scripts/enable-telegram.mjs DEINE_CHAT_ID` ausführen. Der Befehl prüft den vorhandenen Token und vergleicht die angegebene Chat-ID mit der Restaurantzuordnung in der lokalen D1-Datenbank. Nur bei Übereinstimmung wird `TELEGRAM_ENABLED=true` in der ignorierten lokalen `.dev.vars` gesetzt. Andere Variablen, insbesondere Stripe, bleiben erhalten. Cloudflare-Produktion wird nicht geändert.
+
+Anschließend den Vorschau-Server neu starten und eine **neue** Bar-Testbestellung absenden. Sie erscheint wie bisher im Dashboard und wird zusätzlich an Telegram gesendet. Alte Bestellungen werden nicht nachträglich versendet. Bei Stripe erfolgt der Versand erst nach signierter Testzahlungsbestätigung. Ein gestoppter Codespace verarbeitet keine neuen Bestellungen. Der zusätzliche Telegram-Versand ist ohne dauerhafte Zustellwarteschlange; bei API-Fehlern bleibt die Bestellung im Dashboard verfügbar und ein Fehler erscheint im Serverlog.

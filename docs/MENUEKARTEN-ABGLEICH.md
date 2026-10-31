@@ -58,3 +58,7 @@ Bis zur Migration sorgt die API bereits für die passenden Bilder und sperrt die
 ## Telefonnummer und Telegram
 
 Die Checkout-Telefonnummer bleibt Pflicht und steht mit Telefon-Symbol in der Telegram-Bestellnachricht. Telegram liefert die Kundennummer nicht automatisch. Browser-Ausfüllhilfe wird unterstützt; auf unterstützten Geräten kann der Kunde seinen eigenen Kontakt auswählen. Eine vorgeschlagene Nummer wird erst nach „Übernehmen“ eingetragen und kann abgelehnt werden. Lokales Merken ist freiwillig, erfolgt erst nach erfolgreicher Bestellung und lässt sich wieder löschen. Es findet kein stiller Zugriff auf SIM-, Instagram- oder Telegram-Daten statt.
+
+### Korrektur für Smartphone-Ausfüllhilfe
+
+Eindeutig erkennbare deutsche Mobilnummern ohne Vorwahl-Null (z. B. `15119137118`) werden vor der Übernahme und serverseitig vor dem Speichern zu `015119137118` ergänzt. Bereits internationale Nummern (`+49…`, `0049…`) bleiben erhalten. Ein deutsches Mobilformat mit `49` ohne Pluszeichen erhält das Pluszeichen. Unbekannte lokale Nummern und ausländische Landesvorwahlen werden nicht geraten oder umgeschrieben. Die Korrektur betrifft neue Bestellungen; historische Telefonnummern werden nicht rückwirkend verändert.

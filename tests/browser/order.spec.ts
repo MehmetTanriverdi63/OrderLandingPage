@@ -126,3 +126,18 @@ test('contact picker asks before using a selected number', async ({ page }) => {
   await page.getByRole('button',{name:'Übernehmen',exact:true}).click();
   await expect(page.getByLabel(/Telefonnummer/)).toHaveValue('01234567890');
 });
+
+test('mobile autofill restores the German leading zero before checkout', async ({page}) => {
+  await page.goto('/');
+  await page.getByRole('button',{name:'Deal sichern'}).click();
+  await page.getByRole('button',{name:/Hinzufügen ·/}).click();
+  await page.locator('.cart-button').click();
+  await page.getByRole('button',{name:'Weiter zur Kasse'}).click();
+  const phone=page.getByLabel(/Telefonnummer/);
+  await phone.fill('15119137118');
+  await phone.blur();
+  await expect(phone).toHaveValue('015119137118');
+  await phone.fill('+4915119137118');
+  await phone.blur();
+  await expect(phone).toHaveValue('+4915119137118');
+});

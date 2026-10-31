@@ -118,3 +118,16 @@ node scripts/cloudflare-admin.mjs Amedspor21 --check
 Der Check liest nur Benutzername, Restaurantzuordnung und Demo-Status aus Remote-D1. Er gibt weder Passwörter noch Passwort-Hashes aus. Bei vorhandenem freigeschaltetem Zugang zunächst das zuletzt im Einrichtungsbefehl eingegebene lange Passwort auf der veröffentlichten Website testen.
 
 Korrektur zum Einrichtungshelfer: `wrangler d1 execute --remote --file` liefert Importstatistiken, keine `RETURNING`-Benutzerzeilen. Eine frühere Version konnte deshalb nach einem erfolgreichen Import fälschlich „Admin konnte nicht bestätigt werden“ melden. Die neue Version bestätigt den Import mit einer separaten Remote-Abfrage und prüft zusätzlich intern den gespeicherten Hash. Sie meldet Authentifizierungs- und fehlende Tabellenfehler gezielter, ohne rohe CLI-Ausgaben mit sensiblen Informationen zu veröffentlichen. Bei tatsächlich fehlendem Zugang den Befehl ohne `--check` ausführen.
+
+### Telegram auf dem veröffentlichten Worker aktivieren
+
+Nach ausdrücklicher Freigabe im angemeldeten Codespace:
+
+```bash
+git pull --ff-only
+node scripts/cloudflare-telegram.mjs DEINE_CHAT_ID
+```
+
+Das Skript verwendet den vorhandenen Token aus der Prozessvariable oder der ignorierten `.dev.vars`. Es liest den Chat über Telegram `getChat` zur Prüfung, baut die Anwendung, weist die Chat-ID dem Pilotrestaurant in **Remote-D1** zu, überträgt den Token per Standardeingabe an `wrangler secret put` und deployt `instagram-to-order` mit `wrangler.worker.jsonc`. Der Token steht weder im Git-Repository noch in CLI-Argumenten oder Ausgaben. Das Worker-Konfigurationsflag `TELEGRAM_ENABLED` ist nach Betreiberfreigabe auf `true` gesetzt; ohne Token und zugeordnete Chat-ID findet weiterhin kein Versand statt. Der separate Pages-Konfigurationsstandard bleibt deaktiviert. Cloudflare-Secrets bleiben bei folgenden Deployments erhalten.
+
+Der Schritt erstellt selbst keine Bestellung und sendet keine Testnachricht. Anschließend auf der **Cloudflare-Adresse**, nicht im Codespace, eine neue Bar-Testbestellung durchführen und Telegram-Empfang sowie Dashboard prüfen. Stripe bleibt ausgeschaltet; alte Bestellungen werden nicht nachträglich verschickt. Das Dashboard zeigt den konfigurierten Telegram-Status für das eigene Restaurant. Der Token und die Chat-Zuordnung sind umgebungsspezifisch und werden nicht automatisch aus einer lokalen Datenbank übernommen. Bei einem Fehler können bereits abgeschlossene Schritte gespeichert sein; die benannte Phase prüfen. Ein späterer Rückbau erfordert `TELEGRAM_ENABLED=false` im Worker und ein erneutes Deployment.

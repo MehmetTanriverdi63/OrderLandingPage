@@ -128,7 +128,10 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
   }
   if (path.startsWith('/api/admin/')) {
     const a = await session(req, env);
-    if (path === '/api/admin/me' && method === 'GET') return json({ email: a.email, restaurant: await restaurant(env, a.restaurant_id) });
+    if (path === '/api/admin/me' && method === 'GET') {
+      const chat=await env.DB.prepare('SELECT telegram_chat_id FROM restaurants WHERE id=?').bind(a.restaurant_id).first<{telegram_chat_id:string|null}>();
+      return json({ email: a.email, restaurant: await restaurant(env, a.restaurant_id), telegramEnabled: env.TELEGRAM_ENABLED==='true' && !!env.TELEGRAM_BOT_TOKEN && !!chat?.telegram_chat_id, stripeEnabled: stripeEnabled(env) });
+    }
     if (path === '/api/admin/logout' && method === 'POST') {
       const token = req.headers.get('Cookie')?.match(/(?:^|;\s*)session=([^;]+)/)?.[1] || '';
       await env.DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(await sha256(token)).run();

@@ -15,7 +15,7 @@ test('Instagram deal → extras → cash checkout → private status → restaur
   await expect(page.getByRole('dialog')).toContainText('23,80');
   await page.getByRole('button', { name: 'Weiter zur Kasse' }).click();
   await page.getByLabel('Dein Name', { exact: true }).fill('Browser Testgast');
-  await page.getByLabel('Telefonnummer', { exact: true }).fill('01234567890');
+  await page.getByLabel(/Telefonnummer/).fill('01234567890');
   await page.locator('select[name=pickup]').selectOption({ index: 1 });
   await page.locator('input[name=consent]').check();
   await page.getByRole('button', { name: /Testbestellung aufgeben/ }).click();
@@ -69,14 +69,60 @@ test('menu card search, dish numbers, and reversible pizza extras', async ({ pag
   await expect(page.getByRole('dialog')).toContainText('Pizza Margherita');
   await expect(page.getByRole('dialog')).toContainText('12,40');
 });
-test('source opening times and schnitzel category are available on mobile', async ({ page }) => {
+test('source opening times remain available and schnitzel is removed', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Schnitzel', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Schnitzel Wiener Art' })).toBeVisible();
-  await expect(page.locator('.menu-category-heading')).toContainText('Salat und Pommes');
-  await expect(page.getByRole('status')).toHaveText('4 Gerichte');
+  await expect(page.getByRole('button', { name: 'Schnitzel', exact: true })).toHaveCount(0);
+  await page.getByRole('searchbox').fill('Schnitzel');
+  await expect(page.getByText('Dein Gericht ist noch nicht dabei?')).toBeVisible();
   await expect(page.locator('.restaurant-details')).toContainText('Friedrich-Ebert-Str. 50');
   await expect(page.locator('.restaurant-phone')).toHaveAttribute('href','tel:062412107548');
   await expect(page.locator('.opening-hours')).toContainText('11:30 – 22:00 Uhr');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test('saved phone requires confirmation and can be declined', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('mediterrane-saved-phone', JSON.stringify('01234567890')));
+  async function checkout() {
+    await page.goto('/');
+    await page.getByRole('button', {name:'Deal sichern'}).click();
+    await page.getByRole('button', {name:/Hinzufügen ·/}).click();
+    await page.locator('.cart-button').click();
+    await page.getByRole('button', {name:'Weiter zur Kasse'}).click();
+  }
+  await checkout();
+  await expect(page.getByLabel(/Telefonnummer/)).toHaveValue('');
+  await page.getByRole('button', {name:'Nicht übernehmen',exact:true}).click();
+  await expect(page.getByLabel(/Telefonnummer/)).toHaveValue('');
+  await page.reload();
+  await page.locator('.cart-button').click();
+  await page.getByRole('button', {name:'Weiter zur Kasse'}).click();
+  await page.getByRole('button', {name:'Übernehmen',exact:true}).click();
+  await expect(page.getByLabel(/Telefonnummer/)).toHaveValue('01234567890');
+  expect(await page.locator('#customer-phone').evaluate((input:HTMLInputElement)=>input.checkValidity())).toBe(true);
+});
+
+test('food photos load without stretching', async ({page}) => {
+  await page.goto('/');
+  await page.getByRole('button', {name:'Pizza',exact:true}).click();
+  const photo=page.locator('.product-card .food-photo img').first();
+  await photo.scrollIntoViewIfNeeded();
+  await expect(photo).toBeVisible();
+  await expect.poll(()=>photo.evaluate((img:HTMLImageElement)=>img.naturalWidth)).toBeGreaterThan(0);
+  const ratio=await photo.evaluate((img:HTMLImageElement)=>({actual:img.width/img.height,natural:img.naturalWidth/img.naturalHeight}));
+  expect(ratio.actual).toBeCloseTo(ratio.natural,2);
+  await page.screenshot({path:`/tmp/menu-${test.info().project.name}.png`,fullPage:false});
+});
+
+test('contact picker asks before using a selected number', async ({ page }) => {
+  await page.addInitScript(() => Object.defineProperty(navigator,'contacts',{configurable:true,value:{select:async()=>[{tel:['01234567890']}]}}));
+  await page.goto('/');
+  await page.getByRole('button',{name:'Deal sichern'}).click();
+  await page.getByRole('button',{name:/Hinzufügen ·/}).click();
+  await page.locator('.cart-button').click();
+  await page.getByRole('button',{name:'Weiter zur Kasse'}).click();
+  await page.getByRole('button',{name:'Eigene Nummer aus Kontakt auswählen'}).click();
+  await expect(page.getByText('Ist das deine eigene Telefonnummer?')).toBeVisible();
+  await expect(page.getByLabel(/Telefonnummer/)).toHaveValue('');
+  await page.getByRole('button',{name:'Übernehmen',exact:true}).click();
+  await expect(page.getByLabel(/Telefonnummer/)).toHaveValue('01234567890');
 });

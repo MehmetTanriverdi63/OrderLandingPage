@@ -1,3 +1,5 @@
+import { isRetiredProduct, presentProduct } from '../shared/menu-presentation';
+import { telegramOrderMessage } from './telegram-message';
 import { z } from 'zod';
 import { calculateItem, loginNameSchema, checkoutSchema, hoursSchema, pickupSlots, type Product, type Hours, type Order } from '../shared/model';
 import { equal, sha256, verifyPassword, verifyStripeSignature } from './security';
@@ -8,7 +10,7 @@ const json = (data: unknown, status = 200, headers: Record<string, string> = {})
 function local(req: Request) { return ['localhost', '127.0.0.1', '[::1]'].includes(new URL(req.url).hostname); }
 function demoAllowed(req: Request, env: Env) { return local(req) && env.DEMO_MODE === 'true'; }
 function stripeEnabled(env: Env) { return env.STRIPE_ENABLED === 'true' && !!env.STRIPE_SECRET_KEY?.startsWith('sk_test_'); }
-function product(row: Record<string, unknown>) { return { ...row, options: JSON.parse(row.options as string) } as Product; }
+function product(row: Record<string, unknown>) { return presentProduct({ ...row, options: JSON.parse(row.options as string) } as Product); }
 function order(row: Record<string, unknown>) { return { ...row, items: JSON.parse(row.items as string), access_token_hash: undefined, request_id: undefined } as unknown as Order; }
 async function body(req: Request) {
   const text = await req.text();
@@ -36,8 +38,9 @@ async function notify(env: Env, o: Order) {
   if (env.TELEGRAM_ENABLED !== 'true' || !env.TELEGRAM_BOT_TOKEN) return;
   const r = await env.DB.prepare('SELECT telegram_chat_id FROM restaurants WHERE id=?').bind(o.restaurant_id).first<{ telegram_chat_id: string | null }>();
   if (!r?.telegram_chat_id) return;
-  const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: r.telegram_chat_id, text: `Neue Bestellung #${o.number}\n${o.customer_name}\n${o.items.map(i => `${i.quantity}× ${i.name}`).join('\n')}\n${(o.total / 100).toFixed(2)} EUR · ${o.payment_method === 'cash' ? 'Barzahlung' : 'Stripe Test'}\nAbholwunsch: ${new Date(o.pickup_at).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}\nBitte im Dashboard bearbeiten.` }) });
-  if (!response.ok) throw new Error('Telegram-Zustellung fehlgeschlagen');
+  const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: r.telegram_chat_id, text: telegramOrderMessage(o) }) });
+  const result = await response.json().catch(() => null) as {ok?: boolean} | null;
+  if (!response.ok || result?.ok !== true) throw new Error('Telegram-Zustellung fehlgeschlagen');
 }
 function backgroundNotify(ctx: ExecutionContext, env: Env, o: Order) { ctx.waitUntil(notify(env, o).catch(() => console.error('Telegram-Zustellung fehlgeschlagen für Bestellung', o.id))); }
 async function checkoutSession(env: Env, req: Request, o: Order, token: string) {
@@ -61,7 +64,7 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
     const id = url.searchParams.get('restaurant') || 'mediterrane-worms';
     const r = await restaurant(env, id);
     const rows = await env.DB.prepare('SELECT * FROM products WHERE restaurant_id=? AND available=1 ORDER BY sort_order,id').bind(id).all<Record<string, unknown>>();
-    return json({ restaurant: r, products: rows.results.map(product), pickupSlots: pickupSlots(r.hours), stripeEnabled: stripeEnabled(env), demo: demoAllowed(req, env) });
+    return json({ restaurant: r, products: rows.results.map(product).filter(p=>!isRetiredProduct(p)), pickupSlots: pickupSlots(r.hours), stripeEnabled: stripeEnabled(env), demo: demoAllowed(req, env) });
   }
   if (path === '/api/orders' && method === 'POST') {
     await limit(env, `orders:${req.headers.get('CF-Connecting-IP') || 'local'}`, 30, 60);
@@ -75,7 +78,7 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
       const products = await env.DB.prepare('SELECT * FROM products WHERE restaurant_id=? AND available=1').bind(r.id).all<Record<string, unknown>>();
       let total = 0;
       const items = input.items.map(item => {
-        const p = products.results.map(product).find(p => p.id === item.productId);
+        const p = products.results.map(product).find(p => p.id === item.productId && !isRetiredProduct(p));
         if (!p) return fail(400, 'Ein Produkt ist nicht mehr verfügbar. Bitte Warenkorb aktualisieren.');
         let priced;
         try { priced = calculateItem(p, item); } catch (e) { return fail(400, (e as Error).message); }
@@ -160,10 +163,11 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
     }
     if (path === '/api/admin/products' && method === 'GET') {
       const rows = await env.DB.prepare('SELECT * FROM products WHERE restaurant_id=? ORDER BY sort_order,id').bind(a.restaurant_id).all<Record<string, unknown>>();
-      return json({ products: rows.results.map(product) });
+      return json({ products: rows.results.map(product).filter(p=>!isRetiredProduct(p)) });
     }
     if (path === '/api/admin/products' && method === 'POST') {
       const input = z.object({ name: z.string().trim().min(2).max(100), description: z.string().max(500), category: z.string().min(1).max(60), price: z.number().int().min(50).max(50000) }).parse(await body(req));
+      if (isRetiredProduct({restaurant_id:a.restaurant_id,category:input.category})) fail(400, 'Diese Kategorie wurde aus dem Sortiment entfernt.');
       await env.DB.prepare("INSERT INTO products(id,restaurant_id,name,description,category,price,image) VALUES (?,?,?,?,?,?,?)").bind(crypto.randomUUID(), a.restaurant_id, input.name, input.description, input.category, input.price, '/images/menu-grid.png#2,0').run();
       return json({ ok: true }, 201);
     }

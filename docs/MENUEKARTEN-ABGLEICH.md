@@ -39,3 +39,22 @@ Die SQL-Dateien sind versioniert. Das Hilfsskript `scripts/generate-menu-migrati
 TypeScript/Vite-Build, 20 bestehende Fach-/Integrationstests und API-Smoke gegen echte lokale D1-Emulation. Acht Browserprüfungen (vier Szenarien je Mobil/Desktop) decken den Bestellfluss, Warenkorb-Persistenz, Nummernsuche Nr.44, Such-Leerzustand, Kategorieauswahl, mehrere reversible Pizza-Extras, Preisaddition, Kontakt und Öffnungszeiten ab. Zusätzlich alle fünf Migrationen auf einer frischen separaten lokalen Datenbank angewendet und Kartenpositionen mit der Quelle verglichen.
 
 Stripe und Telegram bleiben ausgeschaltet. Keine öffentliche Website-Veröffentlichung.
+
+## Bildauswahl und Sortiment (31.10.2026)
+
+Die aktive Karte enthält 84 Gerichte plus Instagram-Angebot. Die vier Schnitzelgerichte (76–79) wurden auf Wunsch entfernt. Historische Bestellungen und die ursprüngliche Kartentranskription bleiben erhalten. Die Änderung gilt nur für das Pilotrestaurant.
+
+Die ergänzten Speisenfotos sind KI-generierte, illustrative Beispielbilder. `data/menu-artwork.json` ordnet die Motive den Gerichten zu. Die WebP-Bildtafeln werden proportional skaliert und ausgeschnitten; ihre Seitenverhältnisse werden nicht verzerrt. Unterschiedliche Pizza-, Pasta-, Pide- und Snackmotive ersetzen die bisherigen Symbole.
+
+Migration `0006_food_photos_remove_schnitzel.sql` speichert die Bilder und entfernt die Schnitzelprodukte dauerhaft. Im angemeldeten Codespace ausführen:
+
+```sh
+git pull --ff-only
+node scripts/tool.mjs wrangler d1 migrations apply orders-db --remote
+```
+
+Bis zur Migration sorgt die API bereits für die passenden Bilder und sperrt die entfernten Gerichte auch beim Bestellen.
+
+## Telefonnummer und Telegram
+
+Die Checkout-Telefonnummer bleibt Pflicht und steht mit Telefon-Symbol in der Telegram-Bestellnachricht. Telegram liefert die Kundennummer nicht automatisch. Browser-Ausfüllhilfe wird unterstützt; auf unterstützten Geräten kann der Kunde seinen eigenen Kontakt auswählen. Eine vorgeschlagene Nummer wird erst nach „Übernehmen“ eingetragen und kann abgelehnt werden. Lokales Merken ist freiwillig, erfolgt erst nach erfolgreicher Bestellung und lässt sich wieder löschen. Es findet kein stiller Zugriff auf SIM-, Instagram- oder Telegram-Daten statt.

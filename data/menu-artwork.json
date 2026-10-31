@@ -1,0 +1,316 @@
+{
+  "retiredNumbers": [
+    "76",
+    "77",
+    "78",
+    "79"
+  ],
+  "note": "KI-generierte illustrative Beispielbilder. Motive nach Gericht/Belag zugeordnet; keine Fotos des Restaurants. Pixelrechtecke werden proportional zugeschnitten, nie gestreckt.",
+  "products": [
+    {
+      "number": "21",
+      "name": "Pizza Pane",
+      "image": "/images/pizza-collection.webp#rect,524,660,488,352"
+    },
+    {
+      "number": "22",
+      "name": "Pizza Pane Spezial",
+      "image": "/images/pizza-specials.webp#rect,524,345,488,320"
+    },
+    {
+      "number": "22A",
+      "name": "Pizza Spargel",
+      "image": "/images/pizza-specials.webp#rect,12,689,488,323"
+    },
+    {
+      "number": "23",
+      "name": "Pizza Margherita",
+      "image": "/images/pizza-collection.webp#rect,12,12,488,296"
+    },
+    {
+      "number": "23A",
+      "name": "Pizza Hawai",
+      "image": "/images/pizza-specials.webp#rect,524,12,488,309"
+    },
+    {
+      "number": "24",
+      "name": "Pizza Salami",
+      "image": "/images/pizza-collection.webp#rect,1036,12,488,296"
+    },
+    {
+      "number": "25",
+      "name": "Pizza Tonno",
+      "image": "/images/pizza-specials.webp#rect,12,12,488,309"
+    },
+    {
+      "number": "26",
+      "name": "Pizza Mista",
+      "image": "/images/pizza-collection.webp#rect,12,332,488,304"
+    },
+    {
+      "number": "27",
+      "name": "Pizza Diavola",
+      "image": "/images/pizza-specials.webp#rect,1036,12,488,309"
+    },
+    {
+      "number": "27A",
+      "name": "Pizza Napoli",
+      "image": "/images/pizza-specials.webp#rect,12,345,488,320"
+    },
+    {
+      "number": "28",
+      "name": "Pizza Caspricciosa",
+      "image": "/images/pizza-collection.webp#rect,12,332,488,304"
+    },
+    {
+      "number": "29",
+      "name": "Pizza Mare",
+      "image": "/images/pizza-collection.webp#rect,1036,332,488,304"
+    },
+    {
+      "number": "30",
+      "name": "Pizza Quattro Stagioni",
+      "image": "/images/pizza-collection.webp#rect,12,332,488,304"
+    },
+    {
+      "number": "30A",
+      "name": "Pizza Worms",
+      "image": "/images/pizza-collection.webp#rect,12,332,488,304"
+    },
+    {
+      "number": "31",
+      "name": "Pizza Calzone Döner",
+      "image": "/images/pizza-collection.webp#rect,12,660,488,352"
+    },
+    {
+      "number": "31A",
+      "name": "Kaperna",
+      "image": "/images/pizza-specials.webp#rect,12,345,488,320"
+    },
+    {
+      "number": "32",
+      "name": "Pizza Calzone",
+      "image": "/images/pizza-collection.webp#rect,12,660,488,352"
+    },
+    {
+      "number": "33",
+      "name": "Pizza Mediterran",
+      "image": "/images/menu-specials.webp#rect,1036,695,488,317"
+    },
+    {
+      "number": "33A",
+      "name": "Pizza Wasserturm",
+      "image": "/images/pizza-collection.webp#rect,524,12,488,296"
+    },
+    {
+      "number": "34",
+      "name": "Pizza Döner",
+      "image": "/images/pizza-collection.webp#rect,1036,660,488,352"
+    },
+    {
+      "number": "34A",
+      "name": "Pizza Chipola",
+      "image": "/images/pizza-specials.webp#rect,524,689,488,323"
+    },
+    {
+      "number": "35",
+      "name": "Pizza Broccoli",
+      "image": "/images/pizza-specials.webp#rect,1036,345,488,320"
+    },
+    {
+      "number": "36",
+      "name": "Pizza Verdura",
+      "image": "/images/pizza-collection.webp#rect,524,332,488,304"
+    },
+    {
+      "number": "37",
+      "name": "Pizza Sucuk Funghi",
+      "image": "/images/pizza-specials.webp#rect,1036,12,488,309"
+    },
+    {
+      "number": "38",
+      "name": "Pizza Hollandaise",
+      "image": "/images/pizza-collection.webp#rect,1036,660,488,352"
+    },
+    {
+      "number": "38A",
+      "name": "Pizza Funghi",
+      "image": "/images/pizza-specials.webp#rect,1036,689,488,323"
+    },
+    {
+      "number": "39",
+      "name": "Spaghetti",
+      "image": "/images/pasta-collection.webp#rect,524,12,488,317"
+    },
+    {
+      "number": "40",
+      "name": "Spaghetti Bolognese",
+      "image": "/images/pasta-collection.webp#rect,12,12,488,317"
+    },
+    {
+      "number": "41",
+      "name": "Spaghetti Aglio e Peperonico",
+      "image": "/images/pasta-specials.webp#rect,12,12,488,306"
+    },
+    {
+      "number": "42",
+      "name": "Spaghetti Carbonara",
+      "image": "/images/pasta-collection.webp#rect,1036,12,488,317"
+    },
+    {
+      "number": "43",
+      "name": "Spaghetti Tonno",
+      "image": "/images/pasta-specials.webp#rect,524,12,488,306"
+    },
+    {
+      "number": "44",
+      "name": "Spaghetti Frutti di Mare",
+      "image": "/images/pasta-collection.webp#rect,12,353,488,318"
+    },
+    {
+      "number": "45",
+      "name": "Penne ala Verdura",
+      "image": "/images/pasta-collection.webp#rect,524,353,488,318"
+    },
+    {
+      "number": "46",
+      "name": "Penne Arabiata",
+      "image": "/images/pasta-specials.webp#rect,1036,12,488,306"
+    },
+    {
+      "number": "47",
+      "name": "Penne Gorgonzola",
+      "image": "/images/pasta-specials.webp#rect,12,342,488,329"
+    },
+    {
+      "number": "48",
+      "name": "Penne Paesana",
+      "image": "/images/pasta-specials.webp#rect,524,342,488,329"
+    },
+    {
+      "number": "48A",
+      "name": "Penne Shrimps",
+      "image": "/images/pasta-specials.webp#rect,1036,342,488,329"
+    },
+    {
+      "number": "49",
+      "name": "Penne Melansana",
+      "image": "/images/menu-specials.webp#rect,524,695,488,317"
+    },
+    {
+      "number": "49A",
+      "name": "Penne Pollo",
+      "image": "/images/pasta-collection.webp#rect,1036,353,488,318"
+    },
+    {
+      "number": "50",
+      "name": "Penne Mediterran",
+      "image": "/images/pasta-collection.webp#rect,1036,353,488,318"
+    },
+    {
+      "number": "51",
+      "name": "Polo al Forno",
+      "image": "/images/menu-specials.webp#rect,12,695,488,317"
+    },
+    {
+      "number": "52",
+      "name": "Döner al Forno",
+      "image": "/images/menu-specials.webp#rect,1036,353,488,318"
+    },
+    {
+      "number": "53",
+      "name": "Tagliatella Döner",
+      "image": "/images/menu-specials.webp#rect,12,12,488,317"
+    },
+    {
+      "number": "53A",
+      "name": "Tagliatelle Hollandaise",
+      "image": "/images/pasta-specials.webp#rect,1036,695,488,317"
+    },
+    {
+      "number": "54",
+      "name": "Tagliatella Maremonte",
+      "image": "/images/pasta-specials.webp#rect,524,695,488,317"
+    },
+    {
+      "number": "55",
+      "name": "Tagliatella Adriatico",
+      "image": "/images/pasta-specials.webp#rect,12,695,488,317"
+    },
+    {
+      "number": "56",
+      "name": "Tortellini Paesana",
+      "image": "/images/menu-specials.webp#rect,1036,12,488,317"
+    },
+    {
+      "number": "57",
+      "name": "Tortellini alla Panna",
+      "image": "/images/pasta-collection.webp#rect,12,695,488,317"
+    },
+    {
+      "number": "58",
+      "name": "Tortellini al Forno",
+      "image": "/images/menu-specials.webp#rect,12,353,488,318"
+    },
+    {
+      "number": "59",
+      "name": "Combinazione",
+      "image": "/images/menu-specials.webp#rect,524,353,488,318"
+    },
+    {
+      "number": "60",
+      "name": "Gnocchi mit Tomaten und Mozzarella",
+      "image": "/images/menu-specials.webp#rect,524,12,488,317"
+    },
+    {
+      "number": "61",
+      "name": "Gnocchi Gorgonzola",
+      "image": "/images/pasta-collection.webp#rect,524,695,488,317"
+    },
+    {
+      "number": "70",
+      "name": "Pide Käse",
+      "image": "/images/pide-snacks-collection.webp#rect,12,12,488,316"
+    },
+    {
+      "number": "71",
+      "name": "Pide Hackfleisch",
+      "image": "/images/pide-snacks-collection.webp#rect,524,12,488,316"
+    },
+    {
+      "number": "72",
+      "name": "Pide Spinat",
+      "image": "/images/pide-snacks-collection.webp#rect,1036,12,488,316"
+    },
+    {
+      "number": "73",
+      "name": "Pide Sucuk",
+      "image": "/images/pide-snacks-collection.webp#rect,12,352,488,316"
+    },
+    {
+      "number": "74",
+      "name": "Pide Vegetarisch",
+      "image": "/images/pide-snacks-collection.webp#rect,524,352,488,316"
+    },
+    {
+      "number": "75",
+      "name": "Pide Kebab",
+      "image": "/images/pide-snacks-collection.webp#rect,1036,352,488,316"
+    },
+    {
+      "number": "E2",
+      "name": "Reis",
+      "image": "/images/pide-snacks-collection.webp#rect,1036,692,488,320"
+    },
+    {
+      "number": "E3",
+      "name": "Chicken Wings",
+      "image": "/images/pide-snacks-collection.webp#rect,12,692,488,320"
+    },
+    {
+      "number": "E4",
+      "name": "Chicken Nuggets",
+      "image": "/images/pide-snacks-collection.webp#rect,524,692,488,320"
+    }
+  ]
+}

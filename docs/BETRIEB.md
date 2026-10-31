@@ -74,7 +74,17 @@ Cloudflare Pages/Workers/D1 können im kleinen Pilotbetrieb in kostenlosen Tarif
 
 Vor produktivem Betrieb Löschfristen, Sicherungen, Datenexport, Auftragsverarbeitung und Überwachung festlegen. Der MVP hat keine automatische personenbezogene Datenlöschung, kein Inventar-/Kapazitätsmanagement, keine E-Mail/SMS, keine Lieferung, keine Sitzplätze und keine zentrale Plattform-Superadmin-Oberfläche. Fehlerseiten und Datenbankzugriff sind vorhanden; Produktionsalarme und Wiederherstellung sind Betreiberaufgaben für die nächste Phase.
 
-### Cloudflare-Anmeldung im Codespace: Browser öffnet nicht / localhost-Rückleitung
+### Empfohlen im Codespace: Geräteanmeldung ohne localhost
+
+Die verwendete Wrangler-Version 4.154.0 unterstützt die Geräteanmeldung:
+
+```bash
+node scripts/tool.mjs wrangler login --device --browser=false
+```
+
+Den im Terminal angezeigten Verifizierungslink im Browser öffnen, gegebenenfalls den angezeigten Gerätecode eingeben und den Zugriff bestätigen. Das Terminal bis zur Erfolgsmeldung weiterlaufen lassen. Es wird keine localhost-Rückleitung und kein zweites Terminal benötigt. Danach `node scripts/tool.mjs wrangler whoami` prüfen. Gerätecode und Anmeldeinformationen nicht im Chat teilen. Der Befehl allein veröffentlicht keine Website und aktiviert keinen Tarif. Bei einem abgelaufenen Gerätecode den Befehl neu starten.
+
+### Alternative: Browser öffnet nicht / localhost-Rückleitung
 
 Kein Browserpaket installieren. Zwei Bash-Terminals verwenden:
 

@@ -73,3 +73,14 @@ Nachrichten werden nur für neu gespeicherte Barbestellungen oder bestätigte St
 Cloudflare Pages/Workers/D1 können im kleinen Pilotbetrieb in kostenlosen Tarifen betrieben werden, abhängig von jeweils aktuellen Grenzen. Fünf-Sekunden-Polling verursacht Anfragen und D1-Lesezugriffe: Limits beobachten, mehrere offene Dashboard-Tabs vermeiden. Stripe erhebt bei späteren echten Zahlungen eigene Gebühren. Es wird kein bezahlter Tarif eingerichtet.
 
 Vor produktivem Betrieb Löschfristen, Sicherungen, Datenexport, Auftragsverarbeitung und Überwachung festlegen. Der MVP hat keine automatische personenbezogene Datenlöschung, kein Inventar-/Kapazitätsmanagement, keine E-Mail/SMS, keine Lieferung, keine Sitzplätze und keine zentrale Plattform-Superadmin-Oberfläche. Fehlerseiten und Datenbankzugriff sind vorhanden; Produktionsalarme und Wiederherstellung sind Betreiberaufgaben für die nächste Phase.
+
+### Cloudflare-Anmeldung im Codespace: Browser öffnet nicht / localhost-Rückleitung
+
+Kein Browserpaket installieren. Zwei Bash-Terminals verwenden:
+
+1. `git pull --ff-only`, dann `node scripts/tool.mjs wrangler login --browser=false` im ersten Terminal starten und weiterlaufen lassen. Den **neu ausgegebenen** Cloudflare-Link zeitnah im Browser öffnen und den Zugriff erlauben. Alte Links nach einer Zeitüberschreitung nicht wiederverwenden.
+2. Wenn der Browser nach der Freigabe zu `http://localhost:8976/oauth/callback?...` wechselt und eine Verbindungsfehlermeldung zeigt: Die **vollständige Adresse aus der Browser-Adressleiste** kopieren. Sie enthält einen einmaligen Anmeldecode: nicht im Chat, Screenshot oder Git teilen.
+3. In einem zweiten Codespaces-Terminal `node scripts/cloudflare-complete-login.mjs` ausführen. Die kopierte Rückleitungsadresse unsichtbar einfügen und Enter drücken. Der Helfer akzeptiert ausschließlich den lokalen Callback-Port/Pfad und gibt die Parameter nur an den noch laufenden Wrangler-Anmeldeprozess auf demselben Codespace weiter. Er speichert die Adresse nicht und folgt keinen externen Redirects.
+4. Im ersten Terminal auf die erfolgreiche Anmeldung warten; danach `node scripts/tool.mjs wrangler whoami` prüfen. Bei erneutem Timeout den Login neu beginnen.
+
+Die Anmeldung selbst erstellt kein Deployment, aktiviert keinen kostenpflichtigen Tarif und ändert keine Produktionsdaten. Sie ermöglicht die nachfolgenden, separat ausgeführten Cloudflare-Befehle.

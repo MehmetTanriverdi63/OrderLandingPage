@@ -22,7 +22,7 @@ node scripts/tool.mjs wrangler login
 node scripts/tool.mjs wrangler d1 create orders-db
 ```
 
-Die ausgegebene `database_id` in `wrangler.jsonc` und bei Bedarf `wrangler.worker.jsonc` eintragen. Die aktuelle Null-ID ist ausschließlich ein lokaler Platzhalter.
+Für das Pilotkonto ist `database_id` in beiden Wrangler-Konfigurationen auf `a334a646-3362-4a96-a707-3c74a1de62d9` gesetzt (vom Betreiber angelegte Cloudflare-Datenbank `orders-db`). `preview_database_id` bleibt für die lokale Entwicklung auf der bisherigen Null-ID, damit vorhandene lokale Daten, Admin-Zugänge und Bestellungen erhalten bleiben. Bei Verwendung eines anderen Cloudflare-Kontos dessen eigene D1-ID eintragen. Die ID ist keine Zugangsdatenfreigabe; Remote-Zugriff benötigt Cloudflare-Anmeldung.
 
 ```bash
 node scripts/tool.mjs wrangler d1 migrations apply orders-db --remote
@@ -50,7 +50,7 @@ Lokaler Pages-Produktionscheck: `npm run build && npm run preview:pages` (Port 8
 
 ## Alternativ: eigenständiger Cloudflare Worker
 
-`wrangler.worker.jsonc` liefert die React-Dateien über Worker Static Assets und dieselbe API aus. Nach Setzen der echten D1-ID: `npm run deploy`. Lokal: `npm run preview` für den Produktionsbuild oder `npm run dev` für Vite mit API-Proxy. Pages und Worker sind alternative Bereitstellungen; es müssen nicht beide parallel betrieben werden.
+`wrangler.worker.jsonc` liefert die React-Dateien über Worker Static Assets und dieselbe API aus. Die D1-ID des Pilotkontos ist bereits eingetragen. Nach separater Veröffentlichungsfreigabe: `npm run deploy`. Lokal: `npm run preview` für den Produktionsbuild oder `npm run dev` für Vite mit API-Proxy. Pages und Worker sind alternative Bereitstellungen; es müssen nicht beide parallel betrieben werden.
 
 ## Stripe – nur nach Freigabe im Testmodus
 

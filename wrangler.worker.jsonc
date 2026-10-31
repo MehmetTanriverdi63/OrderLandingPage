@@ -4,6 +4,6 @@
   "main": "worker/index.ts",
   "compatibility_date": "2026-10-01",
   "assets": { "directory": "./dist", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": ["/api/*"] },
-  "d1_databases": [{ "binding": "DB", "database_name": "orders-db", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }],
+  "d1_databases": [{ "binding": "DB", "database_name": "orders-db", "database_id": "a334a646-3362-4a96-a707-3c74a1de62d9", "preview_database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }],
   "vars": { "STRIPE_ENABLED": "false", "TELEGRAM_ENABLED": "false" }
 }

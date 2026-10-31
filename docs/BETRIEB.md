@@ -107,3 +107,14 @@ node scripts/cloudflare-admin.mjs Amedspor21
 Ein eigenes Passwort mit mindestens zwölf Zeichen zweimal unsichtbar eingeben. Nicht das kurze Codespaces-Testpasswort verwenden und kein Passwort im Chat teilen. Der Befehl schreibt ausschließlich den gesalzenen PBKDF2-Hash in `orders-db` **remote**, ordnet den Zugang dem Pilotrestaurant zu und entfernt die temporäre SQL-Datei danach. Ein gleichnamiger nicht-Demo-Admin desselben Restaurants wird aktualisiert und seine Sitzungen werden beendet. Andere Restaurantkonten sowie Bestellungen bleiben unangetastet. Der Benutzername ist bei der Anmeldung nicht groß-/kleinschreibungssensitiv; das Passwort ist es.
 
 Das Klartextpasswort wird weder lokal gespeichert noch ausgegeben. Der bestehende lokale Codespaces-Admin bleibt unverändert. Dies ändert keine Stripe-/Telegram-Aktivierung und führt kein Website-Deployment aus. Erst die Erfolgsmeldung bestätigt die Anlage in der Cloudflare-Datenbank; der separate Website-Login ist anschließend auf der tatsächlichen Cloudflare-Adresse unter `/admin` zu prüfen.
+
+### Cloudflare-Admin prüfen, ohne das Passwort zurückzusetzen
+
+```bash
+git pull --ff-only
+node scripts/cloudflare-admin.mjs Amedspor21 --check
+```
+
+Der Check liest nur Benutzername, Restaurantzuordnung und Demo-Status aus Remote-D1. Er gibt weder Passwörter noch Passwort-Hashes aus. Bei vorhandenem freigeschaltetem Zugang zunächst das zuletzt im Einrichtungsbefehl eingegebene lange Passwort auf der veröffentlichten Website testen.
+
+Korrektur zum Einrichtungshelfer: `wrangler d1 execute --remote --file` liefert Importstatistiken, keine `RETURNING`-Benutzerzeilen. Eine frühere Version konnte deshalb nach einem erfolgreichen Import fälschlich „Admin konnte nicht bestätigt werden“ melden. Die neue Version bestätigt den Import mit einer separaten Remote-Abfrage und prüft zusätzlich intern den gespeicherten Hash. Sie meldet Authentifizierungs- und fehlende Tabellenfehler gezielter, ohne rohe CLI-Ausgaben mit sensiblen Informationen zu veröffentlichen. Bei tatsächlich fehlendem Zugang den Befehl ohne `--check` ausführen.

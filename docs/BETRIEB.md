@@ -94,3 +94,16 @@ Kein Browserpaket installieren. Zwei Bash-Terminals verwenden:
 4. Im ersten Terminal auf die erfolgreiche Anmeldung warten; danach `node scripts/tool.mjs wrangler whoami` prüfen. Bei erneutem Timeout den Login neu beginnen.
 
 Die Anmeldung selbst erstellt kein Deployment, aktiviert keinen kostenpflichtigen Tarif und ändert keine Produktionsdaten. Sie ermöglicht die nachfolgenden, separat ausgeführten Cloudflare-Befehle.
+
+### Cloudflare-Admin direkt mit unsichtbarer Passwortabfrage
+
+Nach erfolgreicher Geräteanmeldung und den Remote-Migrationen im Codespaces-Terminal:
+
+```bash
+git pull --ff-only
+node scripts/cloudflare-admin.mjs Amedspor21
+```
+
+Ein eigenes Passwort mit mindestens zwölf Zeichen zweimal unsichtbar eingeben. Nicht das kurze Codespaces-Testpasswort verwenden und kein Passwort im Chat teilen. Der Befehl schreibt ausschließlich den gesalzenen PBKDF2-Hash in `orders-db` **remote**, ordnet den Zugang dem Pilotrestaurant zu und entfernt die temporäre SQL-Datei danach. Ein gleichnamiger nicht-Demo-Admin desselben Restaurants wird aktualisiert und seine Sitzungen werden beendet. Andere Restaurantkonten sowie Bestellungen bleiben unangetastet. Der Benutzername ist bei der Anmeldung nicht groß-/kleinschreibungssensitiv; das Passwort ist es.
+
+Das Klartextpasswort wird weder lokal gespeichert noch ausgegeben. Der bestehende lokale Codespaces-Admin bleibt unverändert. Dies ändert keine Stripe-/Telegram-Aktivierung und führt kein Website-Deployment aus. Erst die Erfolgsmeldung bestätigt die Anlage in der Cloudflare-Datenbank; der separate Website-Login ist anschließend auf der tatsächlichen Cloudflare-Adresse unter `/admin` zu prüfen.

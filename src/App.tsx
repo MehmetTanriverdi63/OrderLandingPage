@@ -118,7 +118,8 @@ function TrackingButton({receipt,onOpen}:{receipt:Receipt;onOpen:()=>void}){
     void refresh();const timer=setInterval(refresh,5000);
     return()=>{alive=false;clearInterval(timer);};
   },[receipt.id,receipt.token]);
-  return <button className={`tracking-chip ${status==='pending'?'tracking-chip-pending':''}`} onClick={onOpen}><Clock3 size={16}/> Bestellstatus ansehen</button>;
+  if(status==='pending')return <aside className="tracking-waiting-card" aria-label="Bestellung wartet auf Bestätigung"><div className="tracking-waiting-heading"><span className="tracking-waiting-beacon" aria-hidden="true"/><b>Bestätigung ausstehend</b></div><p role="status"><strong>Browser bitte geöffnet lassen.</strong><br/>Warte bitte, bis das Restaurant deine Bestellung angenommen hat.</p><button className="tracking-chip tracking-chip-pending" onClick={onOpen}><Clock3 size={20}/> Bestellstatus ansehen <ArrowRight size={18}/></button></aside>;
+  return <button className="tracking-chip" onClick={onOpen}><Clock3 size={16}/> Bestellstatus ansehen</button>;
 }
 function Tracking({ receipt, onClose }: { receipt: Receipt; onClose: () => void }) {
   const [order, setOrder] = useState<Partial<Order> | null>(null), [error, setError] = useState(''), [paying, setPaying] = useState(false);

@@ -1,9 +1,13 @@
+import { deliverySlots } from '../shared/delivery';
+import { deliveryAddressSchema } from '../shared/order-details';
+import { checkDeliveryAddress,DeliveryCheckError } from './delivery';
+import { encodeOrderNote, decodeOrderNote } from '../shared/order-details';
 import { isRetiredProduct, presentProduct } from '../shared/menu-presentation';
 import { telegramOrderMessage } from './telegram-message';
 import { z } from 'zod';
-import { calculateItem, loginNameSchema, checkoutSchema, hoursSchema, pickupSlots, type Product, type Hours, type Order } from '../shared/model';
+import { RESTAURANT, calculateItem, loginNameSchema, checkoutSchema, hoursSchema, pickupSlots, type Product, type Hours, type Order } from '../shared/model';
 import { equal, sha256, verifyPassword, verifyStripeSignature } from './security';
-export interface Env { DB: D1Database; ASSETS: Fetcher; DEMO_MODE?: string; STRIPE_ENABLED?: string; STRIPE_SECRET_KEY?: string; STRIPE_WEBHOOK_SECRET?: string; TELEGRAM_ENABLED?: string; TELEGRAM_BOT_TOKEN?: string }
+export interface Env { DB: D1Database; ASSETS: Fetcher; DEMO_MODE?: string; STRIPE_ENABLED?: string; STRIPE_SECRET_KEY?: string; STRIPE_WEBHOOK_SECRET?: string; TELEGRAM_ENABLED?: string; TELEGRAM_BOT_TOKEN?: string; GEOCODING_URL?: string }
 class HttpError extends Error { constructor(public status: number, message: string) { super(message); } }
 const fail = (status: number, message: string): never => { throw new HttpError(status, message); };
 const json = (data: unknown, status = 200, headers: Record<string, string> = {}) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store', ...headers } });
@@ -11,7 +15,7 @@ function local(req: Request) { return ['localhost', '127.0.0.1', '[::1]'].includ
 function demoAllowed(req: Request, env: Env) { return local(req) && env.DEMO_MODE === 'true'; }
 function stripeEnabled(env: Env) { return env.STRIPE_ENABLED === 'true' && !!env.STRIPE_SECRET_KEY?.startsWith('sk_test_') && !!env.STRIPE_WEBHOOK_SECRET?.startsWith('whsec_'); }
 function product(row: Record<string, unknown>) { return presentProduct({ ...row, options: JSON.parse(row.options as string) } as Product); }
-function order(row: Record<string, unknown>) { return { ...row, items: JSON.parse(row.items as string), access_token_hash: undefined, request_id: undefined } as unknown as Order; }
+function order(row: Record<string, unknown>) { return { ...row, items: JSON.parse(row.items as string), ...decodeOrderNote(String(row.note || '')), access_token_hash: undefined, request_id: undefined } as unknown as Order; }
 async function body(req: Request) {
   const text = await req.text();
   if (text.length > 30_000) fail(413, 'Anfrage zu groß.');
@@ -46,7 +50,7 @@ function backgroundNotify(ctx: ExecutionContext, env: Env, o: Order) { ctx.waitU
 async function checkoutSession(env: Env, req: Request, o: Order, token: string) {
   if (!stripeEnabled(env)) return fail(400, 'Online-Zahlung ist derzeit deaktiviert. Bitte Barzahlung wählen.');
   const origin = new URL(req.url).origin;
-  const form = new URLSearchParams({ mode: 'payment', 'payment_method_types[0]': 'card', 'line_items[0][price_data][currency]': 'eur', 'line_items[0][price_data][unit_amount]': String(o.total), 'line_items[0][price_data][product_data][name]': `Abholbestellung #${o.number} (TEST)`, 'line_items[0][quantity]': '1', success_url: `${origin}/?order=${o.id}&token=${token}`, cancel_url: `${origin}/?order=${o.id}&token=${token}&payment=cancelled`, 'metadata[order_id]': o.id, 'metadata[restaurant_id]': o.restaurant_id });
+  const form = new URLSearchParams({ mode: 'payment', 'payment_method_types[0]': 'card', 'line_items[0][price_data][currency]': 'eur', 'line_items[0][price_data][unit_amount]': String(o.total), 'line_items[0][price_data][product_data][name]': `Bestellung #${o.number} (TEST)`, 'line_items[0][quantity]': '1', success_url: `${origin}/?order=${o.id}&token=${token}`, cancel_url: `${origin}/?order=${o.id}&token=${token}&payment=cancelled`, 'metadata[order_id]': o.id, 'metadata[restaurant_id]': o.restaurant_id });
   const response = await fetch('https://api.stripe.com/v1/checkout/sessions', { method: 'POST', headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`, 'Content-Type': 'application/x-www-form-urlencoded', 'Idempotency-Key': `checkout-${o.id}` }, body: form });
   if (!response.ok) return fail(502, 'Stripe ist gerade nicht verfügbar. Deine unbezahlte Bestellung ist gespeichert; bitte erneut versuchen.');
   const data = await response.json() as { url: string };
@@ -60,11 +64,16 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
     if (!req.headers.get('Content-Type')?.startsWith('application/json')) fail(415, 'JSON erforderlich.');
   }
   if (path === '/api/health') { await env.DB.prepare('SELECT 1').first(); return json({ ok: true }); }
+  if(path==='/api/delivery/check'&&method==='POST'){
+    await limit(env,`delivery:${req.headers.get('CF-Connecting-IP')||'local'}`,30,60);
+    const address=deliveryAddressSchema.parse(await body(req));
+    try{return json(await checkDeliveryAddress(address,()=>limit(env,'nominatim:global',1,1/60),url.origin,fetch,env.GEOCODING_URL));}catch(error){if(error instanceof DeliveryCheckError)fail(error.status,error.message);throw error;}
+  }
   if (path === '/api/menu' && method === 'GET') {
     const id = url.searchParams.get('restaurant') || 'mediterrane-worms';
     const r = await restaurant(env, id);
     const rows = await env.DB.prepare('SELECT * FROM products WHERE restaurant_id=? AND available=1 ORDER BY sort_order,id').bind(id).all<Record<string, unknown>>();
-    return json({ restaurant: r, products: rows.results.map(product).filter(p=>!isRetiredProduct(p)), pickupSlots: pickupSlots(r.hours), stripeEnabled: stripeEnabled(env), demo: demoAllowed(req, env) });
+    return json({ restaurant: r, products: rows.results.map(product).filter(p=>!isRetiredProduct(p)), pickupSlots: pickupSlots(r.hours), deliverySlots:r.id===RESTAURANT?deliverySlots(r.hours):[], stripeEnabled: stripeEnabled(env), demo: demoAllowed(req, env) });
   }
   if (path === '/api/orders' && method === 'POST') {
     await limit(env, `orders:${req.headers.get('CF-Connecting-IP') || 'local'}`, 30, 60);
@@ -74,7 +83,12 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
     let row = await env.DB.prepare('SELECT * FROM orders WHERE restaurant_id=? AND request_id=?').bind(r.id, input.requestId).first<Record<string, unknown>>();
     let created = false;
     if (!row) {
-      if (!pickupSlots(r.hours).includes(input.pickupAt)) fail(400, 'Dieser Abholtermin ist nicht mehr verfügbar. Bitte neu auswählen.');
+      if(input.fulfillmentMethod==='delivery'){
+        if(r.id!==RESTAURANT)fail(400,'Lieferung ist für dieses Restaurant nicht eingerichtet.');
+        if(!deliverySlots(r.hours).includes(input.pickupAt))fail(400,'Lieferung ist nur zwischen 16:00 und 21:30 Uhr möglich. Bitte eine verfügbare Lieferzeit wählen.');
+        try{const check=await checkDeliveryAddress(input.deliveryAddress!,()=>limit(env,'nominatim:global',1,1/60),url.origin,fetch,env.GEOCODING_URL);if(!check.allowed)fail(400,'Die Lieferadresse liegt außerhalb unseres Liefergebiets von 12 km Luftlinie.');}catch(error){if(error instanceof DeliveryCheckError)fail(error.status,error.message);throw error;}
+      }
+      if (!pickupSlots(r.hours).includes(input.pickupAt)) fail(400, 'Dieser Wunschtermin ist nicht mehr verfügbar. Bitte neu auswählen.');
       const products = await env.DB.prepare('SELECT * FROM products WHERE restaurant_id=? AND available=1').bind(r.id).all<Record<string, unknown>>();
       let total = 0;
       const items = input.items.map(item => {
@@ -89,7 +103,7 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
       if (total > 100000 || input.items.reduce((n, i) => n + i.quantity, 0) > 50) fail(400, 'Für größere Bestellungen bitte direkt beim Restaurant anfragen.');
       const id = crypto.randomUUID();
       const accessToken = await sha256(`${input.requestId}:${id}`);
-      row = await env.DB.prepare("INSERT INTO orders(id,restaurant_id,number,access_token_hash,request_id,customer_name,phone,note,pickup_at,payment_method,payment_status,total,items) SELECT ?,?,COALESCE(MAX(number),1000)+1,?,?,?,?,?,?,?,?,?,? FROM orders WHERE restaurant_id=? ON CONFLICT(restaurant_id,request_id) DO NOTHING RETURNING *").bind(id, r.id, await sha256(accessToken), input.requestId, input.customerName, input.phone, input.note, input.pickupAt, input.paymentMethod, input.paymentMethod === 'cash' ? 'unpaid' : 'awaiting_payment', total, JSON.stringify(items), r.id).first<Record<string, unknown>>();
+      row = await env.DB.prepare("INSERT INTO orders(id,restaurant_id,number,access_token_hash,request_id,customer_name,phone,note,pickup_at,payment_method,payment_status,total,items) SELECT ?,?,COALESCE(MAX(number),1000)+1,?,?,?,?,?,?,?,?,?,? FROM orders WHERE restaurant_id=? ON CONFLICT(restaurant_id,request_id) DO NOTHING RETURNING *").bind(id, r.id, await sha256(accessToken), input.requestId, input.customerName, input.phone, encodeOrderNote(input.note,input.fulfillmentMethod,input.deliveryAddress), input.pickupAt, input.paymentMethod, input.paymentMethod === 'cash' ? 'unpaid' : input.paymentMethod === 'online_demo' ? 'test_only' : 'awaiting_payment', total, JSON.stringify(items), r.id).first<Record<string, unknown>>();
       created = !!row;
       if (!row) row = await env.DB.prepare('SELECT * FROM orders WHERE restaurant_id=? AND request_id=?').bind(r.id, input.requestId).first<Record<string, unknown>>();
     }
@@ -97,7 +111,7 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
     const o = order(row!);
     if (o.payment_method !== input.paymentMethod) fail(409, 'Die Zahlungsart dieser Bestellung steht bereits fest. Bitte den Checkout neu öffnen.');
     const token = await sha256(`${input.requestId}:${o.id}`);
-    if (created && o.payment_method === 'cash') backgroundNotify(ctx, env, o);
+    if (created && ['cash','online_demo'].includes(o.payment_method)) backgroundNotify(ctx, env, o);
     const paymentUrl = o.payment_method === 'stripe' && o.payment_status !== 'paid' ? await checkoutSession(env, req, o, token) : undefined;
     return json({ id: o.id, token, number: o.number, total: o.total, paymentUrl }, created ? 201 : 200);
   }
@@ -118,7 +132,7 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
     const row = await env.DB.prepare('SELECT * FROM orders WHERE id=? AND access_token_hash=?').bind(publicOrder[1], await sha256(token)).first<Record<string, unknown>>();
     if (!row) return fail(404, 'Bestellung nicht gefunden. Bitte den privaten Bestelllink verwenden.');
     const o = order(row);
-    return json({ id: o.id, number: o.number, status: o.status, payment_method: o.payment_method, payment_status: o.payment_status, pickup_at: o.pickup_at, confirmed_pickup: o.confirmed_pickup, total: o.total, items: o.items });
+    return json({ id: o.id, number: o.number, status: o.status, payment_method: o.payment_method, payment_status: o.payment_status, pickup_at: o.pickup_at, confirmed_pickup: o.confirmed_pickup, total: o.total, items: o.items, fulfillment_method:o.fulfillment_method, delivery_address:o.delivery_address });
   }
   if (path === '/api/admin/login' && method === 'POST') {
     await limit(env, `login:${req.headers.get('CF-Connecting-IP') || 'local'}`, 12, 15, 'login_attempts');
@@ -155,7 +169,7 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
       if (o.payment_method === 'stripe' && o.payment_status !== 'paid' && input.status !== 'rejected') fail(409, 'Online-Zahlung ist noch nicht bestätigt.');
       if (input.status === 'accepted') {
         const r = await restaurant(env, a.restaurant_id);
-        if (!input.confirmedPickup || !pickupSlots(r.hours, Date.now() - 25 * 60_000).includes(input.confirmedPickup)) fail(400, 'Bitte eine gültige Abholzeit bestätigen.');
+        if (!input.confirmedPickup || !(o.fulfillment_method==='delivery'?deliverySlots(r.hours,Date.now()-25*60_000):pickupSlots(r.hours, Date.now() - 25 * 60_000)).includes(input.confirmedPickup)) fail(400, 'Bitte eine gültige Abhol- oder Lieferzeit bestätigen.');
       }
       const result = await env.DB.prepare("UPDATE orders SET status=?,confirmed_pickup=COALESCE(?,confirmed_pickup),payment_status=CASE WHEN payment_method='cash' AND ?='completed' THEN 'paid' ELSE payment_status END WHERE id=? AND restaurant_id=? AND status=?").bind(input.status, input.status === 'accepted' ? input.confirmedPickup : null, input.status, o.id, a.restaurant_id, o.status).run();
       if (!result.meta.changes) fail(409, 'Die Bestellung wurde inzwischen geändert. Bitte aktualisieren.');

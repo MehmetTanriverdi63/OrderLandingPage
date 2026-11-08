@@ -17,7 +17,9 @@ test('test online payment hands off to hosted checkout without collecting card d
   await page.getByRole('radio',{name:/Online bezahlen/}).check();
   await page.locator('input[name=consent]').check();
   const request=page.waitForRequest(request=>request.url().endsWith('/api/orders')&&request.method()==='POST');
-  await page.getByRole('button',{name:'Weiter zu Stripe-Testzahlung'}).click();
+  await page.getByRole('button',{name:/Online bestellen/}).click();
+  await expect(page.getByRole('alertdialog')).toContainText('kein echtes Geld');
+  await page.getByRole('button',{name:'Weiter zur Stripe-Testzahlung'}).click();
   expect((await request).postDataJSON().paymentMethod).toBe('stripe');
   await expect(page).toHaveURL('https://checkout.stripe.com/test_fixture');
   await expect(page.getByRole('heading',{name:'Mock Stripe test checkout'})).toBeVisible();

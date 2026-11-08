@@ -28,3 +28,7 @@ Der Worker erlaubt den Testmodus erst, wenn Flag, Testschlüssel und Webhook-Sec
 Lokal: `node scripts/configure-stripe-test.mjs --local` schreibt nur die ignorierte `.dev.vars`. Vorschau neu starten und mit der Stripe CLI Test-Webhooks an `http://localhost:8787/api/stripe/webhook` weiterleiten; dafür das vom lokalen Listener ausgegebene Test-Signing-Secret verwenden. Der Einrichtungshelfer legt keinen Webhook automatisch an und prüft nicht, ob sein Signing Secret zu genau diesem Endpunkt gehört; diesen Zusammenhang durch eine Testbestellung bestätigen.
 
 Zum Abschalten `STRIPE_ENABLED` im verwendeten Worker-Konfigurationsfile auf `false` setzen und deployen. Ein kommerzieller Echtbetrieb braucht eine separate bewusste Freigabe und Umsetzung; Live-Schlüssel allein können ihn hier nicht aktivieren.
+
+## Sichtbare Vorschau ohne Stripe-Konto (Update)
+
+Der Checkout zeigt Onlinezahlung jetzt auch vor der Kontoeinrichtung an. Beim Absenden erscheint zunächst ein Testhinweis zum Bestätigen oder Zurückgehen. Ohne Stripe-Konfiguration wird anschließend ausschließlich eine unbezahlte `online_demo`-Testbestellung angelegt; es gibt keine Abbuchung und keinen Bezahlt-Status. Mit Stripe-Konfiguration folgt nach dem Hinweis der Stripe-Testcheckout. Details einschließlich Lieferung stehen in [LIEFERUNG.md](LIEFERUNG.md).

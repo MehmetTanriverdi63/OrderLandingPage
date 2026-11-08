@@ -38,6 +38,12 @@ async function finish(env:EmailEnv,id:string,restaurantId:string,kind:EmailKind,
  }
  throw new Error('Versandstatus konnte nicht gespeichert werden.');
 }
+export async function reserveEmailQuota(env:EmailEnv){
+  const cap=Math.min(50,Math.max(1,Number(env.EMAIL_DAILY_LIMIT)||50));
+  const day=new Date().toISOString().slice(0,10),reset=Date.parse(`${day}T00:00:00Z`)+86400000;
+  const quota=await env.DB.prepare('INSERT INTO rate_limits(key,count,reset_at) VALUES (?,1,?) ON CONFLICT(key) DO UPDATE SET count=count+1 RETURNING count').bind(`email-daily:${day}`,reset).first<{count:number}>();
+  if(!quota||quota.count>cap)throw new Error('Tageslimit erreicht.');
+}
 export async function sendOrderEmail(env:EmailEnv,id:string,restaurantId:string,kind:EmailKind,fetcher:typeof fetch=fetch){
  if(restaurantId!==RESTAURANT||!emailEnabled(env))return {state:'not_configured'};
  let claimed:Record<string,unknown>|null=null;const claimAt=Date.now();
@@ -55,10 +61,7 @@ export async function sendOrderEmail(env:EmailEnv,id:string,restaurantId:string,
  if(!claimed)return {state:'busy'};
  const detail=decodeOrderNote(String(claimed.note||''));
  try{
-  const cap=Math.min(50,Math.max(1,Number(env.EMAIL_DAILY_LIMIT)||50));
-  const day=new Date().toISOString().slice(0,10),reset=Date.parse(`${day}T00:00:00Z`)+86400000;
-  const quota=await env.DB.prepare('INSERT INTO rate_limits(key,count,reset_at) VALUES (?,1,?) ON CONFLICT(key) DO UPDATE SET count=count+1 RETURNING count').bind(`email-daily:${day}`,reset).first<{count:number}>();
-  if(!quota||quota.count>cap)throw new Error('Tageslimit erreicht.');
+  await reserveEmailQuota(env);
   const message=await emailMessage(claimed,kind,env);
   const response=await fetcher('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':`order-${id}-${kind}`},body:JSON.stringify({from:env.EMAIL_FROM,to:[detail.customer_email],...message}),signal:AbortSignal.timeout(15000)});
   if(!response.ok)throw new Error('Versanddienst hat die Nachricht nicht angenommen.');
@@ -70,4 +73,16 @@ export async function sendOrderEmail(env:EmailEnv,id:string,restaurantId:string,
   await finish(env,id,restaurantId,kind,claimAt,{state:'failed',updatedAt:Date.now(),error:message});
   return {state:'failed'};
  }
+}
+
+export async function sendMonthlyReport(env:EmailEnv,restaurantId:string,to:string,month:string,csv:string,fetcher:typeof fetch=fetch){
+ if(restaurantId!==RESTAURANT||!emailEnabled(env))return {state:'not_configured'};
+ const bytes=new TextEncoder().encode(csv);let binary='';for(let offset=0;offset<bytes.length;offset+=16384)binary+=String.fromCharCode(...bytes.subarray(offset,offset+16384));
+ try{
+  await reserveEmailQuota(env);
+  const key=await sha256(`${restaurantId}:${month}:${to}:${csv}`);
+  const response=await fetcher('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':`monthly-${key}`},body:JSON.stringify({from:env.EMAIL_FROM,to:[to],subject:`Monatsbericht ${month} · Mediterrane Küche Worms`,text:`Dein Monatsbericht ${month} ist als CSV-Datei angehängt. Er enthält keine Kundennamen oder Lieferadressen. Testbetrieb – kein steuerlicher Buchhaltungsnachweis.`,attachments:[{filename:`monatsbericht-${month}.csv`,content:btoa(binary)}]}),signal:AbortSignal.timeout(15000)});
+  if(!response.ok)return {state:'failed'};
+  const result=await response.json() as {id?:string};return result.id?{state:'accepted'}:{state:'failed'};
+ }catch{return {state:'failed'};}
 }

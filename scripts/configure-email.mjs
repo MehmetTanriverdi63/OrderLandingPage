@@ -18,8 +18,9 @@ export async function configureEmail(target,{read=readPassword,run=execFileSync}
  }
  const options={encoding:'utf8',stdio:['pipe','pipe','pipe']};
  try{run('npm',['run','build'],options);}catch{throw new Error('Build fehlgeschlagen. Noch keine Cloudflare-Einstellung geändert.');}
- let stage='E-Mail-Konfiguration speichern';
+ let stage='Datenbankmigration prüfen';
  try{
+  run('node',['scripts/tool.mjs','wrangler','d1','migrations','apply','orders-db','--config','wrangler.worker.jsonc','--remote'],{...options,env:{...process.env,CI:'true'}});
   // Enable last; partial setup must not activate a sender without its credentials.
   for(const name of ['EMAIL_FROM','RESEND_API_KEY','EMAIL_DAILY_LIMIT','EMAIL_ENABLED']){stage=`${name} speichern`;run('node',['scripts/tool.mjs','wrangler','secret','put',name,'--config','wrangler.worker.jsonc'],{...options,input:settings[name]+'\n'});}
   stage='Worker deployen';run('node',['scripts/tool.mjs','wrangler','deploy','--config','wrangler.worker.jsonc'],options);

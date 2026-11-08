@@ -1,4 +1,6 @@
-import { emailEnabled,sendOrderEmail } from './email';
+import { monthlyCsv } from '../shared/statistics';
+import { recordPageView,statistics,privacySettings,savePrivacySettings,privacyPreview,privacyApplySchema,applyPrivacy } from './data-centre';
+import { emailEnabled,sendOrderEmail,sendMonthlyReport } from './email';
 import type { EmailKind } from '../shared/email';
 import { deliverySlots,DELIVERY_MINIMUM_CENTS } from '../shared/delivery';
 import { deliveryAddressSchema } from '../shared/order-details';
@@ -71,6 +73,12 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
     await limit(env,`delivery:${req.headers.get('CF-Connecting-IP')||'local'}`,30,60);
     const address=deliveryAddressSchema.parse(await body(req));
     try{return json(await checkDeliveryAddress(address,()=>limit(env,'nominatim:global',1,1/60),url.origin,fetch,env.GEOCODING_URL));}catch(error){if(error instanceof DeliveryCheckError)fail(error.status,error.message);throw error;}
+  }
+  if(path==='/api/analytics/pageview'&&method==='POST'){
+    if(req.headers.get('Origin')!==url.origin&&!(local(req)&&/^http:\/\/(localhost|127\.0\.0\.1):5173$/.test(req.headers.get('Origin')||'')))fail(403,'Fremde Herkunft nicht erlaubt.');
+    const input=z.object({page:z.enum(['/','/angebot'])}).parse(await body(req));
+    if(/bot|crawler|spider/i.test(req.headers.get('User-Agent')||''))return json({counted:false});
+    return json({counted:await recordPageView(env.DB,input.page)});
   }
   if (path === '/api/menu' && method === 'GET') {
     const id = url.searchParams.get('restaurant') || 'mediterrane-worms';
@@ -165,6 +173,41 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
     if (path === '/api/admin/orders' && method === 'GET') {
       const rows = await env.DB.prepare('SELECT * FROM orders WHERE restaurant_id=? ORDER BY created_at DESC LIMIT 100').bind(a.restaurant_id).all<Record<string, unknown>>();
       return json({ orders: rows.results.map(order) });
+    }
+    if(path==='/api/admin/statistics/export'&&method==='GET'){
+      const month=z.string().regex(/^20\d{2}-(0[1-9]|1[0-2])$/).parse(url.searchParams.get('month'));
+      const result=await statistics(env.DB,a.restaurant_id,31,month);
+      if(result.limited)fail(409,'Der Monatsbericht überschreitet 10.000 Bestellungen. Bitte den Export technisch aufteilen lassen.');
+      return new Response(monthlyCsv(month,result),{headers:{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':`attachment; filename="monatsbericht-${month}.csv"`,'Cache-Control':'no-store'}});
+    }
+    if(path==='/api/admin/statistics/email'&&method==='POST'){
+      const input=z.object({month:z.string().regex(/^20\d{2}-(0[1-9]|1[0-2])$/),to:z.string().trim().email().max(254)}).parse(await body(req));
+      if(!emailEnabled(env)||a.restaurant_id!==RESTAURANT)fail(503,'E-Mail-Versand ist noch nicht eingerichtet. CSV herunterladen und bei Bedarf selbst versenden.');
+      await limit(env,`report-mail:${a.id}`,5,60);
+      const result=await statistics(env.DB,a.restaurant_id,31,input.month);
+      if(result.limited)fail(409,'Der Monatsbericht überschreitet 10.000 Bestellungen.');
+      return json(await sendMonthlyReport(env,a.restaurant_id,input.to,input.month,monthlyCsv(input.month,result)));
+    }
+    if(path==='/api/admin/statistics'&&method==='GET'){
+      const days=z.coerce.number().int().min(1).max(365).parse(url.searchParams.get('days')||30);
+      return json(await statistics(env.DB,a.restaurant_id,days));
+    }
+    if(path==='/api/admin/privacy'&&method==='GET')return json(await privacySettings(env.DB,a.restaurant_id));
+    if(path==='/api/admin/privacy'&&method==='PUT'){
+      const input=z.object({retentionDays:z.number().int().min(1).max(3650)}).parse(await body(req));
+      try{await savePrivacySettings(env.DB,a.restaurant_id,input.retentionDays);}catch(error){if(/no such table/i.test(String(error)))fail(503,'Datenbankmigration für Statistiken und Datenschutzeinstellungen fehlt noch.');throw error;}
+      return json({ok:true,automaticCleanup:false});
+    }
+    if(path==='/api/admin/privacy/preview'&&method==='GET'){
+      const days=z.coerce.number().int().min(1).max(3650).parse(url.searchParams.get('days')||30);
+      return json(await privacyPreview(env.DB,a.restaurant_id,days));
+    }
+    if(path==='/api/admin/privacy/apply'&&method==='POST'){
+      await limit(env,`privacy:${a.id}`,10,60);
+      const input=privacyApplySchema.parse(await body(req));
+      const result=await applyPrivacy(env.DB,a.restaurant_id,input);
+      if(result.stale)fail(409,'Die Vorschau hat sich geändert. Bitte erneut prüfen und bestätigen.');
+      return json(result);
     }
     const retryEmail=path.match(/^\/api\/admin\/orders\/([a-f0-9-]+)\/email$/);
     if(retryEmail&&method==='POST'){

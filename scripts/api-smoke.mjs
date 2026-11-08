@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 const origin = process.env.TEST_API_URL || 'http://127.0.0.1:8787';
@@ -60,6 +61,21 @@ const {body:previewTracked}=await request(`/orders/${preview.id}`,{token:preview
 const {body:previewList}=await request('/admin/orders',{cookie});assert.equal(previewList.orders.find(o=>o.id===preview.id).note,input.note);
 for(const status of ['accepted','ready','completed'])await request(`/admin/orders/${preview.id}`,{cookie,method:'PATCH',data:{status,...(status==='accepted'?{confirmedPickup:menu.pickupSlots[0]}:{})}});
 const {body:previewCompleted}=await request(`/orders/${preview.id}`,{token:preview.token});assert.equal(previewCompleted.payment_status,'test_only');
+await request('/admin/statistics',{expected:401});
+const {body:stats}=await request('/admin/statistics?days=30',{cookie});assert.equal(stats.pageViewsReady,true);assert(Array.isArray(stats.products));
+const pageView=await fetch(origin+'/api/analytics/pageview',{method:'POST',headers:{'Content-Type':'application/json',Origin:origin},body:JSON.stringify({page:'/angebot'})});assert.equal(pageView.status,200);assert.equal((await pageView.json()).counted,true);
+const reportMonth=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit'}).format(new Date());
+const report=await fetch(origin+`/api/admin/statistics/export?month=${reportMonth}`,{headers:{Cookie:cookie}});assert.equal(report.status,200);assert(report.headers.get('content-type').includes('text/csv'));const csv=await report.text();assert(csv.includes('Monatsbericht'));assert(!csv.includes('api.gast@example.com'));assert(!csv.includes('API Testgast'));
+await request('/admin/statistics/email',{data:{month:reportMonth,to:'owner@example.com'},cookie,expected:503});
+const {body:privacyBefore}=await request('/admin/privacy',{cookie});assert.equal(privacyBefore.ready,true);await request('/admin/privacy',{method:'PUT',cookie,data:{retentionDays:3650}});
+const oldId=crypto.randomUUID(),oldToken='local-privacy-test-'+crypto.randomUUID(),oldHash=createHash('sha256').update(oldToken).digest('hex');
+execFileSync('node',['scripts/tool.mjs','wrangler','d1','execute','orders-db','--local','--command',`INSERT INTO orders(id,restaurant_id,number,access_token_hash,request_id,customer_name,phone,note,pickup_at,payment_method,payment_status,total,items,status,created_at) SELECT '${oldId}','mediterrane-worms',MAX(number)+1,'${oldHash}','local-privacy-${oldId}','Privacy Testgast','01234567890','Private Testnotiz','2000-01-01T12:00:00Z','cash','paid',2000,'[{"name":"Privacy Testpizza","quantity":2,"unitPrice":1000,"selections":[]}]','completed','2000-01-01T12:00:00Z' FROM orders WHERE restaurant_id='mediterrane-worms';`],{stdio:'pipe'});
+await request(`/orders/${oldId}`,{token:oldToken});
+const {body:previewPrivacy}=await request('/admin/privacy/preview?days=3650',{cookie});assert.equal(previewPrivacy.orders.length,1,'Refuse cleanup if any row other than our new disposable fixture is selected');assert.equal(previewPrivacy.orders[0].id,oldId);assert(!JSON.stringify(previewPrivacy).includes('Privacy Testgast'));
+await request('/admin/privacy/apply',{cookie,data:{retentionDays:3650,previewToken:previewPrivacy.previewToken,confirmation:'WRONG',bookkeepingConfirmed:false},expected:400});await request(`/orders/${oldId}`,{token:oldToken});
+const {body:cleaned}=await request('/admin/privacy/apply',{cookie,data:{retentionDays:3650,previewToken:previewPrivacy.previewToken,confirmation:'KONTAKTDATEN ENTFERNEN',bookkeepingConfirmed:true}});assert.equal(cleaned.updated,1);await request(`/orders/${oldId}`,{token:oldToken,expected:404});
+const checked=execFileSync('node',['scripts/tool.mjs','wrangler','d1','execute','orders-db','--local','--command',`SELECT CASE WHEN customer_name='Kontaktdaten entfernt' AND phone='' AND total=2000 AND json_extract(items,'$[0].quantity')=2 THEN 1 ELSE 0 END AS ok FROM orders WHERE id='${oldId}';`,'--json'],{encoding:'utf8',stdio:['ignore','pipe','pipe']});assert(JSON.parse(checked.slice(checked.indexOf('['))).some(result=>result.results?.some(row=>row.ok===1)));
+await request('/admin/privacy',{method:'PUT',cookie,data:{retentionDays:privacyBefore.retentionDays}});
 await request('/admin/logout', { cookie, data: {} }); await request('/admin/orders', { cookie, expected: 401 });
 const csrf = await fetch(origin + '/api/orders', { method: 'POST', headers: { Origin: 'https://evil.example', 'Content-Type': 'application/json' }, body: JSON.stringify(input) }); assert.equal(csrf.status, 403);
-console.log('PASS: health, menu, auth/logout, price integrity, options, pickup, cash checkout, idempotency, private tracking, tenant isolation, status transitions/rejection, product price updates, hours, disabled Stripe, unpaid online preview, compatible order metadata, delivery minimum, optional guest email, CSRF.');
+console.log('PASS: health, menu, auth/logout, price integrity, options, pickup, cash checkout, idempotency, private tracking, tenant isolation, status transitions/rejection, product price updates, hours, disabled Stripe, unpaid online preview, compatible order metadata, delivery minimum, optional guest email, aggregate page views, monthly CSV, reviewed fixture-only contact cleanup, CSRF.');

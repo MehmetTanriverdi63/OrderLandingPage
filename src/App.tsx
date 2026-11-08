@@ -1,3 +1,4 @@
+import {usePageView} from './hooks/usePageView';
 import { AllergenNotice } from './components/AllergenGuide';
 import OfferPage from './components/OfferPage';
 import LegalContent, { legalRoutes } from './components/LegalContent';
@@ -27,6 +28,7 @@ export default function App() {
   const pagePath=location.pathname.replace(/\/+$/,'')||'/';
   const isAdmin = pagePath.startsWith('/admin'), isOffer=pagePath==='/angebot';
   const legalPage=legalRoutes[pagePath];
+  usePageView(pagePath,!!receipt);
   useEffect(()=>{document.title=isOffer?'Dein Instagram-Menü | Mediterrane Küche Worms':legalPage?`${legalPage} | Mediterrane Küche Worms`:'Mediterrane Küche Worms | Online bestellen';const description=document.querySelector('meta[name=description]');description?.setAttribute('content',isOffer?'Döner, Pommes und Getränk. Dein Instagram-Menü in Worms: abholen oder ab 20 € im Umkreis von 12 km liefern lassen. Testbetrieb.':legalPage?`${legalPage} der Mediterranen Küche Worms. Testbetrieb mit sichtbar gekennzeichneten fehlenden Betreiberangaben.`:'Mediterrane Lieblingsgerichte in Worms. Abholung oder Lieferung bis 12 km ab 20 € Bestellwert. Testbetrieb.');},[isOffer,legalPage]);
   useSectionNavigation(!isAdmin&&!legalPage, menu !== null);
   async function load() { try { const data = await api<Menu>(`/menu?restaurant=${RESTAURANT}`); setMenu(data); setError(''); } catch (e) { setError((e as Error).message); } }

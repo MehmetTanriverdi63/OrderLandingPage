@@ -28,7 +28,7 @@ git pull --ff-only
 node scripts/configure-email.mjs --cloudflare
 ```
 
-Der Helfer fragt Absender und Schlüssel unsichtbar ab, prüft den Build und speichert Konfiguration/Schlüssel über Standardeingabe als Cloudflare-Secrets. `EMAIL_ENABLED` wird zuletzt gesetzt. Secrets bleiben bei späteren Deployments erhalten. Er prüft die Formate, nicht die Domainverifizierung oder den Tarif. Keine E-Mail wird allein durch die Einrichtung versendet. Bei einem Fehler können frühere Einstellungen bereits gespeichert sein; die benannte Phase prüfen.
+Der Helfer fragt Absender und Schlüssel unsichtbar ab, prüft den Build und speichert Konfiguration/Schlüssel über Standardeingabe als Cloudflare-Secrets. `EMAIL_ENABLED` wird zuletzt gesetzt. Secrets bleiben bei späteren Deployments erhalten. Er wendet offene D1-Migrationen für die Statistik an und prüft die Formate, nicht die Domainverifizierung oder den Tarif. Keine E-Mail wird allein durch die Einrichtung versendet. Bei einem Fehler können frühere Einstellungen bereits gespeichert sein; die benannte Phase prüfen.
 
 Lokal alternativ `node scripts/configure-email.mjs --local`; die ignorierte `.dev.vars` wird mit Dateirechten 0600 geschrieben. Server neu starten. Auch lokal kann diese ausdrücklich aktivierte Konfiguration echte E-Mails versenden – nur die eigene Testadresse verwenden. Im Repository sind weder Schlüssel noch aktive E-Mail-Konfiguration vorhanden.
 
@@ -41,3 +41,5 @@ Die gespeicherte E-Mail und Versand-Metadaten sind personenbezogene Bestelldaten
 ## Prüfung
 
 Automatische Prüfungen simulieren ausschließlich externe Anbieteraufrufe. Sie decken optionale/ungültige E-Mails, deaktivierten Versand, Mandantentrennung, private Links, HTML-Escaping, zwei unterschiedliche Nachrichtentypen, Wiederholungen, konkurrierende Zustellung, Anbieterfehler, Tageslimit und die endliche Idempotenzfrist ab. Kein echter Resend-Account oder Posteingang wurde hier getestet.
+
+Monatsberichte können zusätzlich nach ausdrücklicher Admin-Aktion als CSV-Anhang versendet werden. Sie teilen dasselbe Tageslimit. Anleitung: [STATISTIK-DATENSCHUTZ.md](STATISTIK-DATENSCHUTZ.md).

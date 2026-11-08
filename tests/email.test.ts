@@ -1,5 +1,5 @@
 import {afterEach,describe,it,expect,vi} from 'vitest';
-import {sendOrderEmail,emailMessage,emailEnabled,type EmailEnv} from '../worker/email';
+import {sendOrderEmail,emailMessage,emailEnabled,sendMonthlyReport,type EmailEnv} from '../worker/email';
 import {encodeOrderNote,decodeOrderNote} from '../shared/order-details';
 import {checkoutSchema,RESTAURANT} from '../shared/model';
 import {sha256} from '../worker/security';
@@ -43,4 +43,10 @@ describe('optional guest email confirmations (mocked external requests only)',()
   const f=await fixture(),old=Date.now()-24*60*60_000;f.row.note=encodeOrderNote('','pickup',null,'kunde@example.com',{received:{state:'failed',updatedAt:Date.now()-1000,firstAttemptAt:old}});const fetcher=vi.fn();expect((await sendOrderEmail(f.env,f.id,RESTAURANT,'received',fetcher)).state).toBe('manual_check_required');expect(fetcher).not.toHaveBeenCalled();
  });
  it('refuses a forged tracking token hash and ignores request-host supplied destinations',async()=>{const f=await fixture();const message=await emailMessage(f.row,'received',{});expect(message.text).toContain('https://instagram-to-order.m-verdi.workers.dev/');await expect(emailMessage(f.row,'received',{PUBLIC_SITE_URL:'http://insecure.example'})).rejects.toThrow();f.row.access_token_hash='forged';await expect(emailMessage(f.row,'received',{})).rejects.toThrow('Bestelllink');});
+ it('sends a monthly CSV only after explicit authenticated report action, using the shared quota',async()=>{
+  const f=await fixture(),fetcher=vi.fn(async()=>Response.json({id:'report-message'}));
+  const result=await sendMonthlyReport(f.env,RESTAURANT,'owner@example.com','2026-11','\uFEFFGericht;Menge\r\nDöner;2',fetcher);expect(result.state).toBe('accepted');
+  const payload=JSON.parse(String((fetcher.mock.calls[0] as unknown as [string,RequestInit])[1].body));expect(payload.to).toEqual(['owner@example.com']);expect(payload.attachments[0].filename).toBe('monatsbericht-2026-11.csv');expect(Buffer.from(payload.attachments[0].content,'base64').toString('utf8')).toContain('Döner');
+ });
+
 });

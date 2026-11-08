@@ -1,14 +1,16 @@
+import {sealOutlook} from '../worker/outlook';
 import {afterEach,describe,it,expect,vi} from 'vitest';
 import {sendOrderEmail,emailMessage,emailEnabled,sendMonthlyReport,type EmailEnv} from '../worker/email';
 import {encodeOrderNote,decodeOrderNote} from '../shared/order-details';
 import {checkoutSchema,RESTAURANT} from '../shared/model';
 import {sha256} from '../worker/security';
-async function fixture({email='kunde@example.com',status='pending',cap=50}={}){
+async function fixture({email='kunde@example.com',status='pending',cap=50,microsoft=false}={}){
  const id='aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa',requestId='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';const token=await sha256(`${requestId}:${id}`);
  const row:Record<string,unknown>={id,restaurant_id:RESTAURANT,request_id:requestId,access_token_hash:await sha256(token),number:1234,customer_name:'<Testgast>',phone:'015119137118',note:encodeOrderNote('Notiz','pickup',null,email),pickup_at:'2030-01-01T15:00:00.000Z',confirmed_pickup:'2030-01-01T15:15:00.000Z',status,payment_method:'cash',payment_status:'unpaid',total:990};
- let count=0;
- const DB={prepare(sql:string){return {bind(...args:unknown[]){return {async first(){if(sql.includes('rate_limits'))return {count:++count};return args[0]===id&&args[1]===RESTAURANT?{...row}:null;},async run(){if(sql.startsWith('UPDATE orders SET note=')&&args[1]===id&&args[2]===RESTAURANT&&args[3]===row.note){row.note=args[0];return {meta:{changes:1}};}return {meta:{changes:0}};}};}};}} as unknown as D1Database;
+ let count=0;let connection:{account_email:string;refresh_token:string}|null=null;
+ const DB={prepare(sql:string){return {bind(...args:unknown[]){return {async first(){if(sql.includes('outlook_connections'))return connection;if(sql.includes('rate_limits'))return {count:++count};return args[0]===id&&args[1]===RESTAURANT?{...row}:null;},async run(){if(sql.startsWith('UPDATE orders SET note=')&&args[1]===id&&args[2]===RESTAURANT&&args[3]===row.note){row.note=args[0];return {meta:{changes:1}};}return {meta:{changes:0}};}};}};}} as unknown as D1Database;
  const env:EmailEnv={DB,EMAIL_ENABLED:'true',RESEND_API_KEY:'re_mock_secret',EMAIL_FROM:'Mediterrane Küche Worms <bestellung@example.com>',EMAIL_DAILY_LIMIT:String(cap)};
+ if(microsoft){Object.assign(env,{EMAIL_PROVIDER:'microsoft',MICROSOFT_CLIENT_ID:'11111111-1111-4111-8111-111111111111',MICROSOFT_CLIENT_SECRET:'only-a-mock-secret',MICROSOFT_MAILBOX:'tester@outlook.de'});connection={account_email:'tester@outlook.de',refresh_token:await sealOutlook(env,'test-refresh',`refresh:${RESTAURANT}`)};}
  return {row,env,id,token};
 }
 afterEach(()=>vi.restoreAllMocks());
@@ -47,6 +49,12 @@ describe('optional guest email confirmations (mocked external requests only)',()
   const f=await fixture(),fetcher=vi.fn(async()=>Response.json({id:'report-message'}));
   const result=await sendMonthlyReport(f.env,RESTAURANT,'owner@example.com','2026-11','\uFEFFGericht;Menge\r\nDöner;2',fetcher);expect(result.state).toBe('accepted');
   const payload=JSON.parse(String((fetcher.mock.calls[0] as unknown as [string,RequestInit])[1].body));expect(payload.to).toEqual(['owner@example.com']);expect(payload.attachments[0].filename).toBe('monatsbericht-2026-11.csv');expect(Buffer.from(payload.attachments[0].content,'base64').toString('utf8')).toContain('Döner');
+ });
+
+ it('blocks non-test recipients in Outlook and never blindly resends an uncertain Microsoft message',async()=>{
+  const blocked=await fixture({microsoft:true}),unused=vi.fn();expect((await sendOrderEmail(blocked.env,blocked.id,RESTAURANT,'received',unused)).state).toBe('test_recipient_only');expect(unused).not.toHaveBeenCalled();
+  const f=await fixture({email:'tester@outlook.de',microsoft:true}),fetcher=vi.fn(async(url:string|URL|Request)=>{if(String(url).includes('/token'))return Response.json({access_token:'mock'});throw new Error('timeout after send');});
+  expect((await sendOrderEmail(f.env,f.id,RESTAURANT,'received',fetcher as typeof fetch)).state).toBe('unknown');expect(decodeOrderNote(String(f.row.note)).email_notifications?.received?.state).toBe('unknown');expect((await sendOrderEmail(f.env,f.id,RESTAURANT,'received',fetcher as typeof fetch)).state).toBe('manual_check_required');expect(fetcher).toHaveBeenCalledTimes(2);
  });
 
 });

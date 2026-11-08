@@ -10,7 +10,7 @@ export async function configureEmail(target,{read=readPassword,run=execFileSync}
  if(!/^[^\r\n<>]+<[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+>$/.test(sender))throw new Error('Absenderformat ungültig. Anzeigename <adresse@domain.de> verwenden.');
  const key=String(await read('Resend-API-Schlüssel (re_…, unsichtbar): ')).trim();
  if(!/^re_[A-Za-z0-9_-]{12,}$/.test(key))throw new Error('Ungültiges Schlüsselformat. Keine Zugangsdaten im Chat teilen.');
- const settings={EMAIL_ENABLED:'true',EMAIL_FROM:sender,RESEND_API_KEY:key,EMAIL_DAILY_LIMIT:'50'};
+ const settings={EMAIL_PROVIDER:'resend',EMAIL_ENABLED:'true',EMAIL_FROM:sender,RESEND_API_KEY:key,EMAIL_DAILY_LIMIT:'50'};
  if(target==='--local'){
   const original=existsSync('.dev.vars')?readFileSync('.dev.vars','utf8'):'';
   writeFileSync('.dev.vars',withSettings(original,settings),{mode:0o600});chmodSync('.dev.vars',0o600);
@@ -22,7 +22,7 @@ export async function configureEmail(target,{read=readPassword,run=execFileSync}
  try{
   run('node',['scripts/tool.mjs','wrangler','d1','migrations','apply','orders-db','--config','wrangler.worker.jsonc','--remote'],{...options,env:{...process.env,CI:'true'}});
   // Enable last; partial setup must not activate a sender without its credentials.
-  for(const name of ['EMAIL_FROM','RESEND_API_KEY','EMAIL_DAILY_LIMIT','EMAIL_ENABLED']){stage=`${name} speichern`;run('node',['scripts/tool.mjs','wrangler','secret','put',name,'--config','wrangler.worker.jsonc'],{...options,input:settings[name]+'\n'});}
+  for(const name of ['EMAIL_FROM','RESEND_API_KEY','EMAIL_DAILY_LIMIT','EMAIL_PROVIDER','EMAIL_ENABLED']){stage=`${name} speichern`;run('node',['scripts/tool.mjs','wrangler','secret','put',name,'--config','wrangler.worker.jsonc'],{...options,input:settings[name]+'\n'});}
   stage='Worker deployen';run('node',['scripts/tool.mjs','wrangler','deploy','--config','wrangler.worker.jsonc'],options);
  }catch{throw new Error(`${stage} fehlgeschlagen. Frühere Schritte können bereits gespeichert sein. Cloudflare-Anmeldung prüfen; Schlüssel nicht im Chat teilen.`);}
  console.log('E-Mail-Versand konfiguriert. Absender-Verifizierung und Kontingent müssen im Versanddienst geprüft sein. Keine E-Mail und keine Bestellung ausgelöst.');

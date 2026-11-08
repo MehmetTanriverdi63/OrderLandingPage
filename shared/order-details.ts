@@ -14,7 +14,7 @@ export function decodeOrderNote(stored:string):{note:string;fulfillment_method:F
     const value=JSON.parse(stored.slice(prefix.length));
     if(value.anonymized===true&&['pickup','delivery'].includes(value.fulfillmentMethod))return {note:'',fulfillment_method:value.fulfillmentMethod,delivery_address:null,personal_data_removed:true};
     const email=z.string().email().max(254).safeParse(value.customerEmail);
-    const notifications=z.partialRecord(z.enum(['received','accepted']),z.object({state:z.enum(['sending','accepted','failed']),updatedAt:z.number(),firstAttemptAt:z.number().optional(),providerId:z.string().max(100).optional(),error:z.string().max(200).optional()})).safeParse(value.emailNotifications);
+    const notifications=z.partialRecord(z.enum(['received','accepted']),z.object({state:z.enum(['sending','accepted','failed','unknown']),updatedAt:z.number(),firstAttemptAt:z.number().optional(),providerId:z.string().max(100).optional(),error:z.string().max(200).optional()})).safeParse(value.emailNotifications);
     const emailData=email.success?{customer_email:email.data,...(notifications.success?{email_notifications:notifications.data}:{})}:{};
     if(value.fulfillmentMethod==='pickup'&&typeof value.note==='string')return {note:value.note,fulfillment_method:'pickup',delivery_address:null,...emailData};
     const address=deliveryAddressSchema.safeParse(value.deliveryAddress);

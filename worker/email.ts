@@ -1,9 +1,12 @@
+import {outlookConfigured,outlookStatus,outlookRecipientAllowed,sendOutlook,OutlookUncertainError,type OutlookEnv} from './outlook';
 import { RESTAURANT,money,timeLabel } from '../shared/model';
 import { decodeOrderNote,encodeOrderNote } from '../shared/order-details';
 import type { EmailKind,EmailNotice,EmailNotices } from '../shared/email';
 import { sha256,equal } from './security';
-export interface EmailEnv {DB:D1Database;EMAIL_ENABLED?:string;RESEND_API_KEY?:string;EMAIL_FROM?:string;PUBLIC_SITE_URL?:string;EMAIL_DAILY_LIMIT?:string}
-export function emailEnabled(env:EmailEnv){return env.EMAIL_ENABLED==='true'&&/^re_[A-Za-z0-9_-]+$/.test(env.RESEND_API_KEY||'')&&!!env.EMAIL_FROM&&/^[^\r\n<>]*<[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+>$/.test(env.EMAIL_FROM);}
+export interface EmailEnv extends OutlookEnv {DB:D1Database;EMAIL_PROVIDER?:string;EMAIL_ENABLED?:string;RESEND_API_KEY?:string;EMAIL_FROM?:string;PUBLIC_SITE_URL?:string;EMAIL_DAILY_LIMIT?:string}
+export function emailEnabled(env:EmailEnv){if(env.EMAIL_PROVIDER==='microsoft')return env.EMAIL_ENABLED==='true'&&outlookConfigured(env);return env.EMAIL_ENABLED==='true'&&/^re_[A-Za-z0-9_-]+$/.test(env.RESEND_API_KEY||'')&&!!env.EMAIL_FROM&&/^[^\r\n<>]*<[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+>$/.test(env.EMAIL_FROM);}
+export async function emailReady(env:EmailEnv){return emailEnabled(env)&&(env.EMAIL_PROVIDER!=='microsoft'||(await outlookStatus(env,RESTAURANT)).connected);}
+export function emailRecipientAllowed(env:EmailEnv,to:string){return env.EMAIL_PROVIDER!=='microsoft'||outlookRecipientAllowed(env,to);}
 const escape=(text:string)=>text.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 export async function emailMessage(row:Record<string,unknown>,kind:EmailKind,env:Pick<EmailEnv,'PUBLIC_SITE_URL'>){
  const detail=decodeOrderNote(String(row.note||''));
@@ -45,30 +48,40 @@ export async function reserveEmailQuota(env:EmailEnv){
   if(!quota||quota.count>cap)throw new Error('Tageslimit erreicht.');
 }
 export async function sendOrderEmail(env:EmailEnv,id:string,restaurantId:string,kind:EmailKind,fetcher:typeof fetch=fetch){
- if(restaurantId!==RESTAURANT||!emailEnabled(env))return {state:'not_configured'};
+ if(restaurantId!==RESTAURANT||!await emailReady(env))return {state:'not_configured'};
  let claimed:Record<string,unknown>|null=null;const claimAt=Date.now();
  for(let attempt=0;attempt<4;attempt++){
   const row=await load(env,id,restaurantId);if(!row)return {state:'not_found'};
   const detail=decodeOrderNote(String(row.note||''));if(!detail.customer_email)return {state:'no_email'};
+  if(!emailRecipientAllowed(env,detail.customer_email))return {state:'test_recipient_only'};
   if(kind==='accepted'&&!['accepted','ready','completed'].includes(String(row.status)))return {state:'not_accepted'};
   const old=detail.email_notifications?.[kind];
+  if(old?.state==='unknown')return {state:'manual_check_required'};
   if(old?.state==='accepted')return {state:'already_sent'};
   if(old?.state==='sending'&&claimAt-old.updatedAt<5*60_000)return {state:'sending'};
+  if(old?.state==='sending'&&env.EMAIL_PROVIDER==='microsoft')return {state:'manual_check_required'};
   // The provider's idempotency window is finite: never automatically retry an uncertain old send.
   if(old&&claimAt-(old.firstAttemptAt||old.updatedAt)>23*60*60_000)return {state:'manual_check_required'};
   if(await updateNotice(env,row,kind,{state:'sending',updatedAt:claimAt})){claimed=row;break;}
  }
  if(!claimed)return {state:'busy'};
  const detail=decodeOrderNote(String(claimed.note||''));
+ let microsoftSubmitted=false;
  try{
   await reserveEmailQuota(env);
   const message=await emailMessage(claimed,kind,env);
+  if(env.EMAIL_PROVIDER==='microsoft'){
+    await sendOutlook(env,restaurantId,detail.customer_email!,message,fetcher);microsoftSubmitted=true;
+    await finish(env,id,restaurantId,kind,claimAt,{state:'accepted',updatedAt:Date.now()});
+    return {state:'accepted'};
+  }
   const response=await fetcher('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':`order-${id}-${kind}`},body:JSON.stringify({from:env.EMAIL_FROM,to:[detail.customer_email],...message}),signal:AbortSignal.timeout(15000)});
   if(!response.ok)throw new Error('Versanddienst hat die Nachricht nicht angenommen.');
   const result=await response.json() as {id?:string};if(typeof result.id!=='string'||!result.id||result.id.length>100)throw new Error('Versanddienst konnte nicht bestätigt werden.');
   await finish(env,id,restaurantId,kind,claimAt,{state:'accepted',updatedAt:Date.now(),providerId:result.id});
   return {state:'accepted'};
  }catch(error){
+  if(microsoftSubmitted||error instanceof OutlookUncertainError){await finish(env,id,restaurantId,kind,claimAt,{state:'unknown',updatedAt:Date.now(),error:'Versandstatus unklar. Bitte zuerst im Outlook-Ordner Gesendet prüfen.'});return {state:'unknown'};}
   const message=error instanceof Error&&error.message==='Tageslimit erreicht.'?'Tageslimit erreicht.':'Versand nicht bestätigt. Bitte im Versanddienst prüfen.';
   await finish(env,id,restaurantId,kind,claimAt,{state:'failed',updatedAt:Date.now(),error:message});
   return {state:'failed'};
@@ -76,13 +89,17 @@ export async function sendOrderEmail(env:EmailEnv,id:string,restaurantId:string,
 }
 
 export async function sendMonthlyReport(env:EmailEnv,restaurantId:string,to:string,month:string,csv:string,fetcher:typeof fetch=fetch){
- if(restaurantId!==RESTAURANT||!emailEnabled(env))return {state:'not_configured'};
+ if(restaurantId!==RESTAURANT||!await emailReady(env))return {state:'not_configured'};
+ if(!emailRecipientAllowed(env,to))return {state:'test_recipient_only'};
  const bytes=new TextEncoder().encode(csv);let binary='';for(let offset=0;offset<bytes.length;offset+=16384)binary+=String.fromCharCode(...bytes.subarray(offset,offset+16384));
  try{
   await reserveEmailQuota(env);
   const key=await sha256(`${restaurantId}:${month}:${to}:${csv}`);
+  if(env.EMAIL_PROVIDER==='microsoft'){
+    await sendOutlook(env,restaurantId,to,{subject:`Monatsbericht ${month} · Mediterrane Küche Worms`,text:`Dein Monatsbericht ${month} ist als CSV-Datei angehängt. Testbetrieb – kein Buchhaltungsnachweis.`,attachments:[{filename:`monatsbericht-${month}.csv`,content:btoa(binary)}]},fetcher);return {state:'accepted'};
+  }
   const response=await fetcher('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':`monthly-${key}`},body:JSON.stringify({from:env.EMAIL_FROM,to:[to],subject:`Monatsbericht ${month} · Mediterrane Küche Worms`,text:`Dein Monatsbericht ${month} ist als CSV-Datei angehängt. Er enthält keine Kundennamen oder Lieferadressen. Testbetrieb – kein steuerlicher Buchhaltungsnachweis.`,attachments:[{filename:`monatsbericht-${month}.csv`,content:btoa(binary)}]}),signal:AbortSignal.timeout(15000)});
   if(!response.ok)return {state:'failed'};
   const result=await response.json() as {id?:string};return result.id?{state:'accepted'}:{state:'failed'};
- }catch{return {state:'failed'};}
+ }catch(error){return {state:error instanceof OutlookUncertainError?'unknown':'failed'};}
 }

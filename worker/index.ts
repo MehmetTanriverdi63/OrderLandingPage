@@ -1,6 +1,7 @@
+import {outlookStatus,startOutlook,completeOutlook,disconnectOutlook,OutlookError} from './outlook';
 import { monthlyCsv } from '../shared/statistics';
 import { recordPageView,statistics,privacySettings,savePrivacySettings,privacyPreview,privacyApplySchema,applyPrivacy } from './data-centre';
-import { emailEnabled,sendOrderEmail,sendMonthlyReport } from './email';
+import { emailEnabled,emailReady,emailRecipientAllowed,sendOrderEmail,sendMonthlyReport } from './email';
 import type { EmailKind } from '../shared/email';
 import { deliverySlots,DELIVERY_MINIMUM_CENTS } from '../shared/delivery';
 import { deliveryAddressSchema } from '../shared/order-details';
@@ -11,7 +12,7 @@ import { telegramOrderMessage } from './telegram-message';
 import { z } from 'zod';
 import { RESTAURANT, calculateItem, loginNameSchema, checkoutSchema, hoursSchema, pickupSlots, type Product, type Hours, type Order } from '../shared/model';
 import { equal, sha256, verifyPassword, verifyStripeSignature } from './security';
-export interface Env { DB: D1Database; ASSETS: Fetcher; DEMO_MODE?: string; STRIPE_ENABLED?: string; STRIPE_SECRET_KEY?: string; STRIPE_WEBHOOK_SECRET?: string; TELEGRAM_ENABLED?: string; TELEGRAM_BOT_TOKEN?: string; GEOCODING_URL?: string; EMAIL_ENABLED?:string;RESEND_API_KEY?:string;EMAIL_FROM?:string;PUBLIC_SITE_URL?:string;EMAIL_DAILY_LIMIT?:string }
+export interface Env { DB: D1Database; ASSETS: Fetcher; DEMO_MODE?: string; STRIPE_ENABLED?: string; STRIPE_SECRET_KEY?: string; STRIPE_WEBHOOK_SECRET?: string; TELEGRAM_ENABLED?: string; TELEGRAM_BOT_TOKEN?: string; GEOCODING_URL?: string; EMAIL_ENABLED?:string;RESEND_API_KEY?:string;EMAIL_FROM?:string;PUBLIC_SITE_URL?:string;EMAIL_DAILY_LIMIT?:string;EMAIL_PROVIDER?:string;MICROSOFT_CLIENT_ID?:string;MICROSOFT_CLIENT_SECRET?:string;MICROSOFT_MAILBOX?:string;EMAIL_TEST_RECIPIENT?:string }
 class HttpError extends Error { constructor(public status: number, message: string) { super(message); } }
 const fail = (status: number, message: string): never => { throw new HttpError(status, message); };
 const json = (data: unknown, status = 200, headers: Record<string, string> = {}) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store', ...headers } });
@@ -84,7 +85,7 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
     const id = url.searchParams.get('restaurant') || 'mediterrane-worms';
     const r = await restaurant(env, id);
     const rows = await env.DB.prepare('SELECT * FROM products WHERE restaurant_id=? AND available=1 ORDER BY sort_order,id').bind(id).all<Record<string, unknown>>();
-    return json({ restaurant: r, products: rows.results.map(product).filter(p=>!isRetiredProduct(p)), pickupSlots: pickupSlots(r.hours), deliverySlots:r.id===RESTAURANT?deliverySlots(r.hours):[], stripeEnabled: stripeEnabled(env), emailEnabled:id===RESTAURANT&&emailEnabled(env), demo: demoAllowed(req, env) });
+    return json({ restaurant: r, products: rows.results.map(product).filter(p=>!isRetiredProduct(p)), pickupSlots: pickupSlots(r.hours), deliverySlots:r.id===RESTAURANT?deliverySlots(r.hours):[], stripeEnabled: stripeEnabled(env), emailEnabled:id===RESTAURANT&&await emailReady(env), emailTestMode:env.EMAIL_PROVIDER==='microsoft', demo: demoAllowed(req, env) });
   }
   if (path === '/api/orders' && method === 'POST') {
     await limit(env, `orders:${req.headers.get('CF-Connecting-IP') || 'local'}`, 30, 60);
@@ -148,7 +149,7 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
     const row = await env.DB.prepare('SELECT * FROM orders WHERE id=? AND access_token_hash=?').bind(publicOrder[1], await sha256(token)).first<Record<string, unknown>>();
     if (!row) return fail(404, 'Bestellung nicht gefunden. Bitte den privaten Bestelllink verwenden.');
     const o = order(row);
-    return json({ id: o.id, number: o.number, status: o.status, payment_method: o.payment_method, payment_status: o.payment_status, pickup_at: o.pickup_at, confirmed_pickup: o.confirmed_pickup, total: o.total, items: o.items, fulfillment_method:o.fulfillment_method, delivery_address:o.delivery_address, email_notifications:o.email_notifications, emailProvided:!!o.customer_email, emailEnabled:o.restaurant_id===RESTAURANT&&emailEnabled(env) });
+    return json({ id: o.id, number: o.number, status: o.status, payment_method: o.payment_method, payment_status: o.payment_status, pickup_at: o.pickup_at, confirmed_pickup: o.confirmed_pickup, total: o.total, items: o.items, fulfillment_method:o.fulfillment_method, delivery_address:o.delivery_address, email_notifications:o.email_notifications, emailProvided:!!o.customer_email, emailEnabled:o.restaurant_id===RESTAURANT&&await emailReady(env),emailRecipientAllowed:!o.customer_email||emailRecipientAllowed(env,o.customer_email) });
   }
   if (path === '/api/admin/login' && method === 'POST') {
     await limit(env, `login:${req.headers.get('CF-Connecting-IP') || 'local'}`, 12, 15, 'login_attempts');
@@ -163,7 +164,7 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
     const a = await session(req, env);
     if (path === '/api/admin/me' && method === 'GET') {
       const chat=await env.DB.prepare('SELECT telegram_chat_id FROM restaurants WHERE id=?').bind(a.restaurant_id).first<{telegram_chat_id:string|null}>();
-      return json({ email: a.email, restaurant: await restaurant(env, a.restaurant_id), telegramEnabled: env.TELEGRAM_ENABLED==='true' && !!env.TELEGRAM_BOT_TOKEN && !!chat?.telegram_chat_id, stripeEnabled: stripeEnabled(env), emailEnabled:a.restaurant_id===RESTAURANT&&emailEnabled(env) });
+      return json({ email: a.email, restaurant: await restaurant(env, a.restaurant_id), telegramEnabled: env.TELEGRAM_ENABLED==='true' && !!env.TELEGRAM_BOT_TOKEN && !!chat?.telegram_chat_id, stripeEnabled: stripeEnabled(env), emailEnabled:a.restaurant_id===RESTAURANT&&await emailReady(env) });
     }
     if (path === '/api/admin/logout' && method === 'POST') {
       const token = req.headers.get('Cookie')?.match(/(?:^|;\s*)session=([^;]+)/)?.[1] || '';
@@ -174,6 +175,14 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
       const rows = await env.DB.prepare('SELECT * FROM orders WHERE restaurant_id=? ORDER BY created_at DESC LIMIT 100').bind(a.restaurant_id).all<Record<string, unknown>>();
       return json({ orders: rows.results.map(order) });
     }
+    if(path==='/api/admin/outlook'&&method==='GET')return json(await outlookStatus(env,a.restaurant_id));
+    if(path==='/api/admin/outlook'&&method==='DELETE'){await disconnectOutlook(env,a.restaurant_id);return json({ok:true});}
+    if(path==='/api/admin/outlook/connect'&&method==='GET'){
+      try{return await startOutlook(env,a.restaurant_id,a.id);}catch(error){fail(400,error instanceof OutlookError?error.message:'Microsoft-Verbindung konnte nicht gestartet werden.');}
+    }
+    if(path==='/api/admin/outlook/callback'&&method==='GET'){
+      try{return await completeOutlook(env,req,a.restaurant_id,a.id);}catch(error){fail(400,error instanceof OutlookError?error.message:'Microsoft-Anmeldung konnte nicht bestätigt werden. Bitte erneut verbinden.');}
+    }
     if(path==='/api/admin/statistics/export'&&method==='GET'){
       const month=z.string().regex(/^20\d{2}-(0[1-9]|1[0-2])$/).parse(url.searchParams.get('month'));
       const result=await statistics(env.DB,a.restaurant_id,31,month);
@@ -182,7 +191,7 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
     }
     if(path==='/api/admin/statistics/email'&&method==='POST'){
       const input=z.object({month:z.string().regex(/^20\d{2}-(0[1-9]|1[0-2])$/),to:z.string().trim().email().max(254)}).parse(await body(req));
-      if(!emailEnabled(env)||a.restaurant_id!==RESTAURANT)fail(503,'E-Mail-Versand ist noch nicht eingerichtet. CSV herunterladen und bei Bedarf selbst versenden.');
+      if(!await emailReady(env)||a.restaurant_id!==RESTAURANT)fail(503,'E-Mail-Versand ist noch nicht eingerichtet. CSV herunterladen und bei Bedarf selbst versenden.');
       await limit(env,`report-mail:${a.id}`,5,60);
       const result=await statistics(env.DB,a.restaurant_id,31,input.month);
       if(result.limited)fail(409,'Der Monatsbericht überschreitet 10.000 Bestellungen.');
@@ -215,7 +224,7 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
       await limit(env,`email-retry:${a.id}`,10,60);
       const row=await env.DB.prepare('SELECT * FROM orders WHERE id=? AND restaurant_id=?').bind(retryEmail[1],a.restaurant_id).first<Record<string,unknown>>();
       if(!row)fail(404,'Bestellung nicht gefunden.');
-      if(!emailEnabled(env)||a.restaurant_id!==RESTAURANT)fail(503,'E-Mail-Versand ist noch nicht eingerichtet.');
+      if(!await emailReady(env)||a.restaurant_id!==RESTAURANT)fail(503,'E-Mail-Versand ist noch nicht eingerichtet.');
       const result=await sendOrderEmail(env,retryEmail[1],a.restaurant_id,input.kind);
       return json(result);
     }

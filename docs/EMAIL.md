@@ -43,3 +43,7 @@ Die gespeicherte E-Mail und Versand-Metadaten sind personenbezogene Bestelldaten
 Automatische Prüfungen simulieren ausschließlich externe Anbieteraufrufe. Sie decken optionale/ungültige E-Mails, deaktivierten Versand, Mandantentrennung, private Links, HTML-Escaping, zwei unterschiedliche Nachrichtentypen, Wiederholungen, konkurrierende Zustellung, Anbieterfehler, Tageslimit und die endliche Idempotenzfrist ab. Kein echter Resend-Account oder Posteingang wurde hier getestet.
 
 Monatsberichte können zusätzlich nach ausdrücklicher Admin-Aktion als CSV-Anhang versendet werden. Sie teilen dasselbe Tageslimit. Anleitung: [STATISTIK-DATENSCHUTZ.md](STATISTIK-DATENSCHUTZ.md).
+
+## Outlook als Alternative für eigene Funktionstests
+
+Zusätzlich steht ein Microsoft-Provider mit persönlicher OAuth-Freigabe zur Verfügung. Er benötigt kein Resend-Konto und keine eigene Absenderdomain; Appregistrierung und Microsoft-Zustimmung sind trotzdem erforderlich. Der Test ist auf ein festgelegtes Postfach begrenzt. Der Resend-Einrichtungshelfer setzt explizit `EMAIL_PROVIDER=resend`; Outlook wird stattdessen nach [OUTLOOK-TEST.md](OUTLOOK-TEST.md) eingerichtet. Der API-Zustand `unknown` kennzeichnet bei Microsoft unbestätigte Sendungen, die nicht automatisch erneut verschickt werden.

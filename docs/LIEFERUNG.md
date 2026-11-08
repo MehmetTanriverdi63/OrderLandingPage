@@ -30,3 +30,7 @@ Onlinezahlung ist im Formular immer auswählbar. Erst beim Absenden erscheint ei
 Ohne eingerichtetes Stripe-Testkonto erzeugt die Bestätigung eine **unbezahlte Online-Testvorschau** mit `payment_method=online_demo` und `payment_status=test_only`. Es werden keine Kartendaten erfasst, keine Stripe-Anfragen gesendet und niemals ein Bezahlt-Status vorgetäuscht. Dashboard, Bestellstatus und Telegram kennzeichnen dies ausdrücklich. Auch nach Abschluss bleibt die Vorschau als nicht bezahlt markiert. Das Restaurant erhält sie wie andere Testbestellungen und kann den Testablauf bearbeiten.
 
 Bei eingerichtetem Stripe-Testkonto erfolgt nach demselben Hinweis die Weiterleitung zum echten Stripe-Testcheckout. Nur dessen signierter Webhook kann eine Stripe-Testzahlung als bezahlt bestätigen. Live-Schlüssel bleiben gesperrt. Die bestehende Einrichtungsanleitung [ONLINE-ZAHLUNG.md](ONLINE-ZAHLUNG.md) gilt weiterhin für diesen optionalen Schritt.
+
+## Mindestbestellwert (Update)
+
+Lieferung ist ab 20,00 € Warenwert möglich. Backend und Checkout prüfen diesen Wert; Abholung bleibt ohne Mindestbestellwert. Die neue Angebotsseite `/angebot` zeigt die Bedingungen bereits vor der Produktauswahl. Zwei Standardmenüs zu je 9,90 € reichen noch nicht aus. Der Test-Lieferpreis bleibt 0 €. Weitere Informationen: [ANGEBOTSSEITE.md](ANGEBOTSSEITE.md).

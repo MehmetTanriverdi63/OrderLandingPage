@@ -1,6 +1,7 @@
 import type { Hours } from './model';
 import { pickupSlots } from './model';
 export const DELIVERY_RADIUS_KM=12;
+export const DELIVERY_MINIMUM_CENTS=2000;
 // Friedrich-Ebert-Straße 50, 67549 Worms. OSM building way/297347515, checked 08.11.2026.
 export const DELIVERY_ORIGIN={lat:49.6340817,lon:8.3498238};
 export function distanceKm(a:{lat:number;lon:number},b:{lat:number;lon:number}){

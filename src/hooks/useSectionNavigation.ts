@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
-const sections = new Set(['angebot', 'speisekarte', 'so-gehts', 'restaurant']);
+const sections = new Set(['angebot', 'speisekarte', 'so-gehts', 'restaurant', 'instagram']);
 /** Resolve fragment links after React mounts, and align again after initial layout settles. */
 export function useSectionNavigation(enabled: boolean, contentReady: boolean) {
   const alignRef = useRef<(() => void) | null>(null);

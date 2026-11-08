@@ -3,7 +3,7 @@ import worker,{type Env} from '../worker/index';
 import {DELIVERY_ORIGIN} from '../shared/delivery';
 const hours=Array.from({length:7},(_,day)=>({day,open:'11:00',close:'22:00',closed:false}));
 const address={street:'Teststraße',houseNumber:'10',postalCode:'67549',city:'Worms',instructions:'2. Stock'};
-function fixture(){
+function fixture(price=2000){
  let stored:Record<string,unknown>|null=null;
  const DB={prepare(sql:string){return {bind(...b:unknown[]){return {
  async first(){
@@ -13,12 +13,12 @@ function fixture(){
   if(sql.includes('access_token_hash=?'))return stored?.access_token_hash===b[1]?stored:null;
   if(sql.includes('SELECT * FROM orders'))return stored;
   return null;
- },async all(){return {results:[{id:'deal',restaurant_id:'mediterrane-worms',name:'Menü',price:990,options:'[]',image:'',category:'Menü'}]};}
+ },async all(){return {results:[{id:'deal',restaurant_id:'mediterrane-worms',name:'Menü',price,options:'[]',image:'',category:'Menü'}]};}
  };}};} } as unknown as D1Database;
  return {env:{DB} as Env,stored:()=>stored};
 }
 function request(changes:Record<string,unknown>={}){
- return new Request('https://example.com/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restaurantId:'mediterrane-worms',customerName:'Testgast',phone:'015119137118',note:'Ohne Zwiebeln',quotedTotal:990,pickupAt:'2026-11-08T15:00:00.000Z',fulfillmentMethod:'delivery',deliveryAddress:address,paymentMethod:'online_demo',consent:true,requestId:'c67ff3f4-cc2f-4359-926b-88d0f69d051a',items:[{productId:'deal',quantity:1,selections:{}}],...changes})});
+ return new Request('https://example.com/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restaurantId:'mediterrane-worms',customerName:'Testgast',phone:'015119137118',note:'Ohne Zwiebeln',quotedTotal:2000,pickupAt:'2026-11-08T15:00:00.000Z',fulfillmentMethod:'delivery',deliveryAddress:address,paymentMethod:'online_demo',consent:true,requestId:'c67ff3f4-cc2f-4359-926b-88d0f69d051a',items:[{productId:'deal',quantity:1,selections:{}}],...changes})});
 }
 function geocoder(lat=DELIVERY_ORIGIN.lat){return vi.fn(async()=>Response.json([{lat:String(lat),lon:String(DELIVERY_ORIGIN.lon),address:{road:'Teststraße',house_number:'10',postcode:'67549',country_code:'de'}}]));}
 const ctx={waitUntil:vi.fn()} as unknown as ExecutionContext;
@@ -43,4 +43,9 @@ describe('server delivery and unpaid online preview contracts',()=>{
   for(const time of ['2026-11-08T14:45:00.000Z','2026-11-08T20:45:00.000Z']){const f=fixture();const response=await worker.fetch(request({pickupAt:time}),f.env,ctx);expect(response.status).toBe(400);expect(await response.text()).toContain('16:00 und 21:30');expect(f.stored()).toBeNull();}
   expect(external).not.toHaveBeenCalled();
  });
+ it('enforces the 20 euro delivery minimum using the server-calculated total before geocoding',async()=>{
+  vi.useFakeTimers();vi.setSystemTime(new Date('2026-11-08T10:00:00Z'));const external=vi.fn();vi.stubGlobal('fetch',external);const f=fixture(1999);
+  const response=await worker.fetch(request({quotedTotal:1999}),f.env,ctx);expect(response.status).toBe(400);expect(await response.text()).toContain('20,00');expect(f.stored()).toBeNull();expect(external).not.toHaveBeenCalled();
+ });
+
 });

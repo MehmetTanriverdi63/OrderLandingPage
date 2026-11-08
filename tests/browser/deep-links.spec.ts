@@ -21,8 +21,8 @@ test('normal home and clicked fragment navigation still work', async ({ page }) 
   await page.goto('/');
   await expect.poll(()=>page.evaluate(()=>window.scrollY)).toBe(0);
   await page.getByRole('link', { name: /Jetzt entdecken/ }).click();
-  await expect(page).toHaveURL(/#angebot$/);
-  await expectAtDeal(page);
+  await expect(page).toHaveURL(/\/angebot$/);
+  await expect(page.getByRole('heading',{name:/Dein Döner-Menü/})).toBeVisible();
   await page.locator('.brand').first().click();
   await expect.poll(()=>page.evaluate(()=>window.scrollY)).toBe(0);
 });

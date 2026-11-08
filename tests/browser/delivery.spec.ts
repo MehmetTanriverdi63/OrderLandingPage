@@ -1,6 +1,6 @@
 import {test,expect} from '@playwright/test';
 async function checkout(page:import('@playwright/test').Page){
- await page.goto('/');await page.getByRole('button',{name:'Deal sichern'}).click();await page.getByRole('button',{name:/Hinzufügen ·/}).click();await page.locator('.cart-button').click();await page.getByRole('button',{name:'Weiter zur Kasse'}).click();
+ await page.goto('/');await page.getByRole('button',{name:'Deal sichern'}).click();await page.getByRole('button',{name:'Menge erhöhen'}).click();await page.getByRole('button',{name:'Menge erhöhen'}).click();await page.getByRole('button',{name:/Hinzufügen ·/}).click();await page.locator('.cart-button').click();await page.getByRole('button',{name:'Weiter zur Kasse'}).click();
  await page.getByRole('radio',{name:/Lieferung/}).check();
  await page.getByLabel('Dein Name',{exact:true}).fill('Liefer Testgast');await page.getByLabel(/Telefonnummer/).fill('015119137118');
  await page.getByLabel('Straße',{exact:true}).fill('Teststraße');await page.getByLabel('Hausnummer',{exact:true}).fill('10');await page.getByLabel('Postleitzahl',{exact:true}).fill('67549');
@@ -10,8 +10,8 @@ test('delivery address and online preview require explicit test confirmation bef
  let sent=0;let payload:Record<string,any>={};
  await page.route('**/api/menu?*',async route=>{const response=await route.fetch();const menu=await response.json();await route.fulfill({json:{...menu,stripeEnabled:false}});});
  await page.route('**/api/delivery/check',route=>route.fulfill({json:{allowed:true,distanceKm:2.1,radiusKm:12}}));
- await page.route('**/api/orders',route=>{sent++;payload=route.request().postDataJSON();return route.fulfill({status:201,json:{id:'delivery-fixture',token:'private-test-token',number:1234,total:990}});});
- await page.route('**/api/orders/delivery-fixture',route=>route.fulfill({json:{number:1234,status:'pending',payment_method:'online_demo',payment_status:'test_only',fulfillment_method:'delivery',delivery_address:payload.deliveryAddress,pickup_at:payload.pickupAt,total:990,items:[]}}));
+ await page.route('**/api/orders',route=>{sent++;payload=route.request().postDataJSON();return route.fulfill({status:201,json:{id:'delivery-fixture',token:'private-test-token',number:1234,total:2970}});});
+ await page.route('**/api/orders/delivery-fixture',route=>route.fulfill({json:{number:1234,status:'pending',payment_method:'online_demo',payment_status:'test_only',fulfillment_method:'delivery',delivery_address:payload.deliveryAddress,pickup_at:payload.pickupAt,total:2970,items:[]}}));
  await checkout(page);
  await page.getByRole('button',{name:'Lieferadresse prüfen'}).click();await expect(page.getByText(/Im Liefergebiet/)).toBeVisible();
  const options=await page.locator('select[name=pickup] option:not([disabled])').evaluateAll(options=>options.map(o=>(o as HTMLOptionElement).value));

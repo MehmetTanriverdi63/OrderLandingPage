@@ -23,6 +23,8 @@ await request('/orders', { data: { ...input, items: [{ productId: 'tenant-produc
 await request('/orders', { data: { ...input, pickupAt: '2020-01-01T12:00:00.000Z' }, expected: 400 });
 await request('/orders', { data: { ...input, paymentMethod: 'stripe' }, expected: 400 });
 await request('/orders', { data: { ...input, quotedTotal: 1 }, expected: 409 });
+assert(menu.deliverySlots.length);
+await request('/orders',{data:{...input,requestId:crypto.randomUUID(),quotedTotal:1190,items:[{...input.items[0],quantity:1}],fulfillmentMethod:'delivery',pickupAt:menu.deliverySlots[0],deliveryAddress:{street:'Teststraße',houseNumber:'10',postalCode:'67549',city:'Worms',instructions:''}},expected:400});
 const { body: created } = await request('/orders', { data: { ...input, total: 1 }, expected: 201 }); assert.equal(created.total, 2380);
 const { body: repeated } = await request('/orders', { data: input }); assert.equal(created.id, repeated.id); assert.equal(created.token, repeated.token);
 await request(`/orders/${created.id}`, { expected: 404 });
@@ -56,4 +58,4 @@ for(const status of ['accepted','ready','completed'])await request(`/admin/order
 const {body:previewCompleted}=await request(`/orders/${preview.id}`,{token:preview.token});assert.equal(previewCompleted.payment_status,'test_only');
 await request('/admin/logout', { cookie, data: {} }); await request('/admin/orders', { cookie, expected: 401 });
 const csrf = await fetch(origin + '/api/orders', { method: 'POST', headers: { Origin: 'https://evil.example', 'Content-Type': 'application/json' }, body: JSON.stringify(input) }); assert.equal(csrf.status, 403);
-console.log('PASS: health, menu, auth/logout, price integrity, options, pickup, cash checkout, idempotency, private tracking, tenant isolation, status transitions/rejection, product price updates, hours, disabled Stripe, unpaid online preview, compatible order metadata, CSRF.');
+console.log('PASS: health, menu, auth/logout, price integrity, options, pickup, cash checkout, idempotency, private tracking, tenant isolation, status transitions/rejection, product price updates, hours, disabled Stripe, unpaid online preview, compatible order metadata, delivery minimum, CSRF.');

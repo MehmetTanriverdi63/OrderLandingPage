@@ -1,0 +1,23 @@
+import { ArrowRight, ArrowUpRight, Banknote, Check, Flame, Instagram, MapPin, ShieldCheck, ShoppingBag, Truck } from 'lucide-react';
+import { money, type Product } from '../../shared/model';
+import { DELIVERY_MINIMUM_CENTS } from '../../shared/delivery';
+type Props={product:Product|undefined;loading:boolean;error:string;onRetry:()=>void;onSelect:(p:Product)=>void};
+export default function OfferPage({product,loading,error,onRetry,onSelect}:Props){
+ const price=product?.price??990;
+ return <main className="offer-main">
+  <section className="container offer-hero" id="angebot" aria-labelledby="offer-title">
+   <div className="offer-copy"><div className="eyebrow"><Instagram size={16}/> DEIN INSTAGRAM-SPECIAL · WORMS</div><h1 id="offer-title">Dein Döner-Menü.<br/><em>Alles drin.</em></h1><p className="offer-description">Döner, knusprige Pommes und ein Getränk.<br/>Ein Menü. Alles drin. Frisch für dich gemacht.</p>
+    <div className="offer-price-row"><strong>{money(price)}</strong><span>pro Menü · inkl. MwSt.<br/>Döner + Pommes + Getränk</span></div>
+    <button className="button primary offer-main-cta" disabled={!product||loading} onClick={()=>product&&onSelect(product)}>Menü zusammenstellen <ArrowRight size={20}/></button>
+    {error&&<div className="error-box" role="alert">{error}<button type="button" onClick={onRetry}>Erneut versuchen</button></div>}
+    {!loading&&!error&&!product&&<p role="status">Dieses Angebot ist gerade nicht verfügbar. <a href="/#speisekarte">Zur Speisekarte</a></p>}
+    <div className="offer-assurances"><span><Check size={15}/> Ohne Registrierung</span><span><Banknote size={15}/> Bar bei Erhalt</span></div>
+    <div className="offer-fulfillment"><div><ShoppingBag size={20}/><p><b>Lieber selbst abholen?</b><span>Friedrich-Ebert-Str. 50 · Worms</span></p></div><div><Truck size={20}/><p><b>Oder zu dir nach Hause.</b><span>Bis 12 km Luftlinie · ab {money(DELIVERY_MINIMUM_CENTS)} Bestellwert<br/>16:00–21:30 Uhr während der Öffnungszeiten</span></p></div></div>
+   </div>
+   <div className="offer-visual"><img src="/images/doner.webp" alt="Illustratives KI-Beispielbild: Döner im Fladenbrot mit Pommes und Getränk" fetchPriority="high"/><span className="offer-image-label"><Flame size={15}/> GROSSER HUNGER. KLEINER PREIS.</span><div className="offer-image-caption"><span>MEDITERRANE KÜCHE · AM WASSERTURM</span><b>Dein nächster<br/>Lieblingsbissen.</b></div><span className="offer-image-note">Illustratives KI-Beispielbild</span></div>
+  </section>
+  <section className="container offer-included" aria-labelledby="offer-included-title"><div className="eyebrow">DAS IST DEIN MENÜ</div><h2 id="offer-included-title">Drei gute Gründe.<br/>Eine richtig gute Pause.</h2><div className="offer-included-grid">{[['01','Dein Döner','Kalb-Puten-Drehspieß im Brot. Deine Soße und Extras wählst du selbst.'],['02','Knusprige Pommes','Die perfekte Begleitung – im Menü bereits enthalten.'],['03','Dein Getränk','Wähle dein Getränk direkt beim Zusammenstellen.']].map(([n,title,copy])=><article key={n}><span>{n}</span><h3>{title}</h3><p>{copy}</p></article>)}</div><p className="offer-extras-note">Kostenpflichtige Extras werden vor dem Hinzufügen transparent angezeigt. Abholung ohne Mindestbestellwert. Lieferung ab {money(DELIVERY_MINIMUM_CENTS)}; Liefergebühr im Test 0,00 €. {price*2<DELIVERY_MINIMUM_CENTS&&<>Zwei Menüs ohne Extras ergeben {money(price*2)} und reichen für Lieferung noch nicht aus.</>}</p></section>
+  <section className="offer-how"><div className="container"><div><div className="eyebrow">VON INSTAGRAM DIREKT ZUM ESSEN</div><h2>Wenige Klicks.<br/>Dann kümmern wir uns.</h2></div><ol><li><b>01 · Zusammenstellen</b><span>Soße, Getränk und optionale Extras auswählen.</span></li><li><b>02 · Bestellen</b><span>Abholung oder Lieferung, Kontaktdaten und Wunschzeit angeben.</span></li><li><b>03 · Bestätigung abwarten</b><span>Das Restaurant bestätigt im Dashboard. Halte den Browser geöffnet und verfolge deinen Bestellstatus.</span></li></ol></div></section>
+  <section className="container offer-closing"><MapPin size={23}/><h2>Frisch aus Worms.<br/><em>Für deinen Feierabend.</em></h2><p>Du möchtest noch etwas dazu? Auf unserer Speisekarte findest du Pizza, Pasta, Salate und mehr.</p><div><button className="button primary" disabled={!product} onClick={()=>product&&onSelect(product)}>Menü zusammenstellen <ArrowRight size={18}/></button><a className="button secondary" href="/#speisekarte">Ganze Speisekarte <ArrowUpRight size={17}/></a></div><span className="offer-test-note"><ShieldCheck size={14}/> Aktuell Testbetrieb · keine echten Onlinezahlungen.</span></section>
+ </main>;
+}

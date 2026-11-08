@@ -1,4 +1,4 @@
-import { deliverySlots } from '../shared/delivery';
+import { deliverySlots,DELIVERY_MINIMUM_CENTS } from '../shared/delivery';
 import { deliveryAddressSchema } from '../shared/order-details';
 import { checkDeliveryAddress,DeliveryCheckError } from './delivery';
 import { encodeOrderNote, decodeOrderNote } from '../shared/order-details';
@@ -86,7 +86,7 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
       if(input.fulfillmentMethod==='delivery'){
         if(r.id!==RESTAURANT)fail(400,'Lieferung ist für dieses Restaurant nicht eingerichtet.');
         if(!deliverySlots(r.hours).includes(input.pickupAt))fail(400,'Lieferung ist nur zwischen 16:00 und 21:30 Uhr möglich. Bitte eine verfügbare Lieferzeit wählen.');
-        try{const check=await checkDeliveryAddress(input.deliveryAddress!,()=>limit(env,'nominatim:global',1,1/60),url.origin,fetch,env.GEOCODING_URL);if(!check.allowed)fail(400,'Die Lieferadresse liegt außerhalb unseres Liefergebiets von 12 km Luftlinie.');}catch(error){if(error instanceof DeliveryCheckError)fail(error.status,error.message);throw error;}
+
       }
       if (!pickupSlots(r.hours).includes(input.pickupAt)) fail(400, 'Dieser Wunschtermin ist nicht mehr verfügbar. Bitte neu auswählen.');
       const products = await env.DB.prepare('SELECT * FROM products WHERE restaurant_id=? AND available=1').bind(r.id).all<Record<string, unknown>>();
@@ -101,6 +101,10 @@ async function api(req: Request, env: Env, ctx: ExecutionContext): Promise<Respo
       });
       if (total !== input.quotedTotal) fail(409, 'Der Preis hat sich geändert. Bitte den Warenkorb neu öffnen und die aktuellen Preise prüfen.');
       if (total > 100000 || input.items.reduce((n, i) => n + i.quantity, 0) > 50) fail(400, 'Für größere Bestellungen bitte direkt beim Restaurant anfragen.');
+      if(input.fulfillmentMethod==='delivery'){
+        if(total<DELIVERY_MINIMUM_CENTS)fail(400,'Der Mindestbestellwert für Lieferung beträgt 20,00 €. Bitte den Warenkorb ergänzen oder Abholung wählen.');
+        try{const check=await checkDeliveryAddress(input.deliveryAddress!,()=>limit(env,'nominatim:global',1,1/60),url.origin,fetch,env.GEOCODING_URL);if(!check.allowed)fail(400,'Die Lieferadresse liegt außerhalb unseres Liefergebiets von 12 km Luftlinie.');}catch(error){if(error instanceof DeliveryCheckError)fail(error.status,error.message);throw error;}
+      }
       const id = crypto.randomUUID();
       const accessToken = await sha256(`${input.requestId}:${id}`);
       row = await env.DB.prepare("INSERT INTO orders(id,restaurant_id,number,access_token_hash,request_id,customer_name,phone,note,pickup_at,payment_method,payment_status,total,items) SELECT ?,?,COALESCE(MAX(number),1000)+1,?,?,?,?,?,?,?,?,?,? FROM orders WHERE restaurant_id=? ON CONFLICT(restaurant_id,request_id) DO NOTHING RETURNING *").bind(id, r.id, await sha256(accessToken), input.requestId, input.customerName, input.phone, encodeOrderNote(input.note,input.fulfillmentMethod,input.deliveryAddress), input.pickupAt, input.paymentMethod, input.paymentMethod === 'cash' ? 'unpaid' : input.paymentMethod === 'online_demo' ? 'test_only' : 'awaiting_payment', total, JSON.stringify(items), r.id).first<Record<string, unknown>>();

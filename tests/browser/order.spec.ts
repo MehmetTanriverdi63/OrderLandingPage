@@ -20,6 +20,8 @@ test('Instagram deal → extras → cash checkout → private status → restaur
   await page.locator('input[name=consent]').check();
   await page.getByRole('button', { name: /Testbestellung aufgeben/ }).click();
   await expect(page.getByText('Deine Bestellung ist angekommen.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Bitte dieses Browserfenster geöffnet lassen.')).toBeVisible();
+  await expect(page.locator('.tracking-pending')).toBeVisible();
   const trackingUrl = page.url();
   const admin = await context.newPage(); await admin.goto('/admin');
   await admin.getByLabel('Benutzername oder E-Mail', { exact: true }).fill('demo@mediterrane.local');
@@ -31,6 +33,8 @@ test('Instagram deal → extras → cash checkout → private status → restaur
   await expect(card.getByRole('button', { name: 'Als abholbereit markieren' })).toBeVisible();
   await page.goto(trackingUrl);
   await expect(page.getByText('Wir machen’s frisch für dich.', { exact: true })).toBeVisible();
+  await expect(page.locator('.pending-browser-notice')).toHaveCount(0);
+  await expect(page.locator('.tracking-pending')).toHaveCount(0);
   await card.getByRole('button', { name: 'Als abholbereit markieren' }).click();
   await expect(page.getByText('Dein Essen ist abholbereit!', { exact: true })).toBeVisible({ timeout: 12000 });
   await card.getByRole('button', { name: /Abgeholt/ }).click();

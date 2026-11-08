@@ -23,3 +23,7 @@ Bestellannahme und Weiterbearbeitung bleiben bei Telegram und Dashboard. Echte O
 Auf ausdrücklichen Betreiberwunsch bleiben fehlende Angaben als gelbe **NOCH ERGÄNZEN**-Felder sichtbar. Diese Seiten sind keine bereits vervollständigten oder abschließend geprüften Rechtstexte. Sie müssen vor echten Kundenbestellungen mit den tatsächlichen Betreiber- und Produktangaben ergänzt und geprüft werden. Es wird keine automatische Löschfunktion oder vollständige rechtliche Konformität behauptet.
 
 Der Footer verlinkt die direkt aufrufbaren Seiten. Die Checkout-Einwilligungszeile enthält direkt zugängliche Links, die sich in einem neuen Tab öffnen, damit der Warenkorb erhalten bleibt. Kein neues Konto oder manueller Datenbankeingriff ist für dieses Update erforderlich.
+
+### Verständliche Allergeninformationen
+
+`/allergene` bietet nun 14 klar benannte, durchsuchbare Gruppen mit aufklappbaren Erklärungen und einer direkten Telefon-Schaltfläche. Die Übersicht wird ausdrücklich nicht als bestätigte Zuordnung zu Gerichten dargestellt. Offene Betreiberaufgaben sind in „Welche Angaben fehlen dem Restaurant noch?“ gebündelt. In der Speisekarte und vor dem Hinzufügen eines Produkts steht ein kurzer Hinweis mit Link und Restaurantnummer. Es werden keine Allergene aus KI-Bildern oder Gerichtsnamen geraten. Die Bestätigung der tatsächlichen Zutaten und Zusatzstoffe durch das Restaurant steht weiterhin aus.

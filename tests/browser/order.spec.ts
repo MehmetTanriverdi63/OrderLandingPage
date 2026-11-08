@@ -34,12 +34,14 @@ test('Instagram deal → extras → cash checkout → private status → restaur
   await expect(card).toContainText('Automatischer E-Mail-Versand noch nicht eingerichtet.');
   await card.getByRole('button', { name: 'Annehmen', exact: true }).click();
   await expect(card.getByRole('button', { name: 'Als abholbereit markieren' })).toBeVisible();
+  await expect(card).toHaveClass(/order-state-accepted/);
   await page.goto(trackingUrl);
   await expect(page.getByText('Wir machen’s frisch für dich.', { exact: true })).toBeVisible();
   await expect(page.locator('.pending-browser-notice')).toHaveCount(0);
   await expect(page.locator('.tracking-pending')).toHaveCount(0);
   await card.getByRole('button', { name: 'Als abholbereit markieren' }).click();
   await expect(page.getByText('Dein Essen ist abholbereit!', { exact: true })).toBeVisible({ timeout: 12000 });
+  await expect(card).toHaveClass(/order-state-ready/);
   await card.getByRole('button', { name: /Abgeholt/ }).click();
   await expect(page.getByText('Lass es dir schmecken!', { exact: true })).toBeVisible({ timeout: 12000 });
   expect(errors).toEqual([]);

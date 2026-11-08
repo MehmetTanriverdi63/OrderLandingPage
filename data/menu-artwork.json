@@ -60,7 +60,7 @@
     {
       "number": "28",
       "name": "Pizza Caspricciosa",
-      "image": "/images/pizza-collection.webp#rect,12,332,488,304"
+      "image": "/images/menu-wraps-pizza-v2.webp#rect,524,353,488,318"
     },
     {
       "number": "29",
@@ -70,12 +70,12 @@
     {
       "number": "30",
       "name": "Pizza Quattro Stagioni",
-      "image": "/images/pizza-collection.webp#rect,12,332,488,304"
+      "image": "/images/menu-wraps-pizza-v2.webp#rect,1036,353,488,318"
     },
     {
       "number": "30A",
       "name": "Pizza Worms",
-      "image": "/images/pizza-collection.webp#rect,12,332,488,304"
+      "image": "/images/menu-wraps-pizza-v2.webp#rect,12,695,488,317"
     },
     {
       "number": "31",
@@ -85,12 +85,12 @@
     {
       "number": "31A",
       "name": "Kaperna",
-      "image": "/images/pizza-specials.webp#rect,12,345,488,320"
+      "image": "/images/menu-wraps-pizza-v2.webp#rect,524,695,488,317"
     },
     {
       "number": "32",
       "name": "Pizza Calzone",
-      "image": "/images/pizza-collection.webp#rect,12,660,488,352"
+      "image": "/images/menu-wraps-pizza-v2.webp#rect,1036,695,488,317"
     },
     {
       "number": "33",
@@ -125,12 +125,12 @@
     {
       "number": "37",
       "name": "Pizza Sucuk Funghi",
-      "image": "/images/pizza-specials.webp#rect,1036,12,488,309"
+      "image": "/images/menu-specials-v2.webp#rect,12,12,488,316"
     },
     {
       "number": "38",
       "name": "Pizza Hollandaise",
-      "image": "/images/pizza-collection.webp#rect,1036,660,488,352"
+      "image": "/images/menu-specials-v2.webp#rect,524,12,488,316"
     },
     {
       "number": "38A",
@@ -205,7 +205,7 @@
     {
       "number": "50",
       "name": "Penne Mediterran",
-      "image": "/images/pasta-collection.webp#rect,1036,353,488,318"
+      "image": "/images/menu-specials-v2.webp#rect,1036,12,488,316"
     },
     {
       "number": "51",
@@ -311,6 +311,121 @@
       "number": "E4",
       "name": "Chicken Nuggets",
       "image": "/images/pide-snacks-collection.webp#rect,524,692,488,320"
+    },
+    {
+      "number": "1",
+      "name": "Insalata Italia",
+      "image": "/images/menu-salads-v2.webp#rect,12,12,488,316"
+    },
+    {
+      "number": "2",
+      "name": "Insalata Mista",
+      "image": "/images/menu-salads-v2.webp#rect,524,12,488,316"
+    },
+    {
+      "number": "3",
+      "name": "Caprese",
+      "image": "/images/menu-salads-v2.webp#rect,1036,12,488,316"
+    },
+    {
+      "number": "4",
+      "name": "Insalata con Tacchino",
+      "image": "/images/menu-salads-v2.webp#rect,12,352,488,316"
+    },
+    {
+      "number": "5",
+      "name": "Insalata Mediterranea",
+      "image": "/images/menu-salads-v2.webp#rect,524,352,488,316"
+    },
+    {
+      "number": "6",
+      "name": "Gemischter Salat mit Dönerfleisch",
+      "image": "/images/menu-salads-v2.webp#rect,1036,352,488,316"
+    },
+    {
+      "number": "7",
+      "name": "Peperoni mit Schafskäse überbacken",
+      "image": "/images/menu-salads-v2.webp#rect,12,692,488,320"
+    },
+    {
+      "number": "7A",
+      "name": "Pommes überbacken",
+      "image": "/images/menu-salads-v2.webp#rect,524,692,488,320"
+    },
+    {
+      "number": "8",
+      "name": "Döner",
+      "image": "/images/menu-salads-v2.webp#rect,1036,692,488,320"
+    },
+    {
+      "number": "9",
+      "name": "Döner XL",
+      "image": "/images/menu-doner-v2.webp#rect,12,12,488,316"
+    },
+    {
+      "number": "10",
+      "name": "Döner mit gegrilltem Gemüse",
+      "image": "/images/menu-doner-v2.webp#rect,524,12,488,316"
+    },
+    {
+      "number": "11",
+      "name": "Döner mit Weichkäse",
+      "image": "/images/menu-doner-v2.webp#rect,1036,12,488,316"
+    },
+    {
+      "number": "12",
+      "name": "Döner Box",
+      "image": "/images/menu-doner-v2.webp#rect,12,352,488,316"
+    },
+    {
+      "number": "13",
+      "name": "Döner Teller",
+      "image": "/images/menu-doner-v2.webp#rect,524,352,488,316"
+    },
+    {
+      "number": "14",
+      "name": "Vegetarischer Döner",
+      "image": "/images/menu-doner-v2.webp#rect,1036,352,488,316"
+    },
+    {
+      "number": "15",
+      "name": "Falafel Döner",
+      "image": "/images/menu-doner-v2.webp#rect,12,692,488,320"
+    },
+    {
+      "number": "16",
+      "name": "Falafelteller",
+      "image": "/images/menu-doner-v2.webp#rect,524,692,488,320"
+    },
+    {
+      "number": "16A",
+      "name": "Yufka Falafel",
+      "image": "/images/menu-doner-v2.webp#rect,1036,692,488,320"
+    },
+    {
+      "number": "17",
+      "name": "Yufka Döner",
+      "image": "/images/menu-wraps-pizza-v2.webp#rect,12,12,488,317"
+    },
+    {
+      "number": "18",
+      "name": "Yufka Döner XL",
+      "image": "/images/menu-wraps-pizza-v2.webp#rect,524,12,488,317"
+    },
+    {
+      "number": "19",
+      "name": "Lahmacun mit Salat",
+      "image": "/images/menu-wraps-pizza-v2.webp#rect,1036,12,488,317"
+    },
+    {
+      "number": "20",
+      "name": "Lahmacun mit Dönerfleisch",
+      "image": "/images/menu-wraps-pizza-v2.webp#rect,12,353,488,318"
+    },
+    {
+      "number": "E1",
+      "name": "Knusprige Pommes",
+      "image": "/images/menu-specials-v2.webp#rect,12,352,488,316"
     }
   ]
 }

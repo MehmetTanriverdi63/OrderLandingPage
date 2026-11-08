@@ -1,21 +1,15 @@
 import { test, expect } from '@playwright/test';
-test('Instagram connects only after consent and can be closed',async({page})=>{
+test('Instagram editorial links to the real profile without a broken embed or remote calls',async({page})=>{
   const requests:string[]=[];
-  await page.route('https://www.instagram.com/**',route=>{requests.push(route.request().url());return route.fulfill({contentType:'text/html',body:'<p>Instagram preview fixture</p>'});});
+  page.on('request',request=>{if(/instagram|cdninstagram|facebook/.test(new URL(request.url()).hostname))requests.push(request.url());});
   await page.goto('/');
   const section=page.locator('#instagram');
   await section.scrollIntoViewIfNeeded();
-  await expect(section.getByRole('heading',{name:/Frisch auf dem Teller/})).toBeVisible();
+  await expect(section.getByRole('heading',{name:/Gutes Essen/})).toBeVisible();
   await expect(section.locator('iframe')).toHaveCount(0);
+  for(const link of await section.getByRole('link').all())await expect(link).toHaveAttribute('href','https://www.instagram.com/mediterranekucheworms/');
+  await expect(section.locator('img')).toBeVisible();
   expect(requests).toEqual([]);
-  await section.getByRole('button',{name:'Instagram-Vorschau laden'}).click();
-  await expect(section.locator('iframe')).toHaveAttribute('src','https://www.instagram.com/mediterranekucheworms/embed/');
-  await expect.poll(()=>requests.length).toBe(1);
-  await expect(section.getByRole('link',{name:/Vorschau fehlt/})).toHaveAttribute('href','https://www.instagram.com/mediterranekucheworms/');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.screenshot({path:`/tmp/instagram-${test.info().project.name}.png`});
-  await section.getByRole('button',{name:'Vorschau schließen'}).click();
-  await expect(section.locator('iframe')).toHaveCount(0);
-  await page.reload();
-  await expect(section.locator('iframe')).toHaveCount(0);
 });

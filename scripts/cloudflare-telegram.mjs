@@ -15,7 +15,7 @@ export async function activateCloudflareTelegram(chatId,{run=execFileSync,fetche
   const original=existsSync('.dev.vars')?readFileSync('.dev.vars','utf8'):'';
   const token=(process.env.TELEGRAM_BOT_TOKEN || readSavedToken(original) || '').trim();
   if(!/^\d+:[A-Za-z0-9_-]+$/.test(token))throw new Error('Kein gespeicherter Token im Codespace gefunden. Zuerst configure-telegram.mjs verwenden.');
-  console.log('Ziel: Cloudflare-Worker instagram-to-order und Remote-Datenbank orders-db. Stripe bleibt deaktiviert.');
+  console.log('Ziel: Cloudflare-Worker instagram-to-order und Remote-Datenbank orders-db. Stripe-Einstellungen bleiben unverändert.');
   let response;
   try{response=await fetcher(`https://api.telegram.org/bot${token}/getChat?chat_id=${encodeURIComponent(chatId)}`,{signal:AbortSignal.timeout(15000)});}catch{throw new Error('Telegram nicht erreichbar. Noch keine Cloudflare-Änderung ausgeführt.');}
   if(!response.ok)throw new Error(`Telegram bestätigt den gespeicherten Token/Chat nicht (HTTP ${response.status}).`);

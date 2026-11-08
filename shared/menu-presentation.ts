@@ -7,6 +7,7 @@ export function isRetiredProduct(product: Pick<Product,'restaurant_id'|'category
 export function presentProduct(product: Product): Product {
   if(product.restaurant_id!==RESTAURANT)return product;
   let image=product.image.replace('/images/doner.png','/images/doner.webp').replace('/images/menu-grid.png','/images/menu-grid.webp');
-  if(image.startsWith('illustration:') && product.menu_number) image=photos.get(product.menu_number) || image;
+  const bundled=/^\/images\/(?:doner|menu-grid|pizza-collection|pizza-specials|pasta-collection|pasta-specials|pide-snacks-collection|menu-specials|menu-salads-v2|menu-doner-v2|menu-wraps-pizza-v2|menu-specials-v2)\.(?:png|webp)(?:#|$)/.test(image);
+  if((image.startsWith('illustration:') || bundled) && product.menu_number) image=photos.get(product.menu_number) || image;
   return {...product,image};
 }

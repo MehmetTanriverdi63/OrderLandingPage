@@ -141,3 +141,21 @@ test('mobile autofill restores the German leading zero before checkout', async (
   await phone.blur();
   await expect(phone).toHaveValue('+4915119137118');
 });
+
+test('all dishes have unique photo regions and salads render different matching photos',async({page})=>{
+  await page.goto('/');
+  const menu=await (await page.request.get('/api/menu')).json();
+  const images=menu.products.map((p:{image:string})=>p.image);
+  expect(new Set(images).size).toBe(images.length);
+  await page.getByRole('button',{name:'Salate',exact:true}).click();
+  const photos=page.locator('.product-card .food-photo img');
+  expect(await photos.count()).toBeGreaterThanOrEqual(6);
+  for(const photo of await photos.all()){
+    await photo.scrollIntoViewIfNeeded();
+    await expect.poll(()=>photo.evaluate((img:HTMLImageElement)=>img.naturalWidth)).toBeGreaterThan(0);
+    const ratios=await photo.evaluate((img:HTMLImageElement)=>[img.width/img.height,img.naturalWidth/img.naturalHeight]);
+    expect(ratios[0]).toBeCloseTo(ratios[1],2);
+  }
+  await page.locator('.product-card').first().scrollIntoViewIfNeeded();
+  await page.screenshot({path:`/tmp/salads-${test.info().project.name}.png`,fullPage:true});
+});

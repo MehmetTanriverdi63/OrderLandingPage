@@ -9,7 +9,7 @@ const fail = (status: number, message: string): never => { throw new HttpError(s
 const json = (data: unknown, status = 200, headers: Record<string, string> = {}) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store', ...headers } });
 function local(req: Request) { return ['localhost', '127.0.0.1', '[::1]'].includes(new URL(req.url).hostname); }
 function demoAllowed(req: Request, env: Env) { return local(req) && env.DEMO_MODE === 'true'; }
-function stripeEnabled(env: Env) { return env.STRIPE_ENABLED === 'true' && !!env.STRIPE_SECRET_KEY?.startsWith('sk_test_'); }
+function stripeEnabled(env: Env) { return env.STRIPE_ENABLED === 'true' && !!env.STRIPE_SECRET_KEY?.startsWith('sk_test_') && !!env.STRIPE_WEBHOOK_SECRET?.startsWith('whsec_'); }
 function product(row: Record<string, unknown>) { return presentProduct({ ...row, options: JSON.parse(row.options as string) } as Product); }
 function order(row: Record<string, unknown>) { return { ...row, items: JSON.parse(row.items as string), access_token_hash: undefined, request_id: undefined } as unknown as Order; }
 async function body(req: Request) {
@@ -218,7 +218,7 @@ export default {
     response.headers.set('Referrer-Policy', 'no-referrer');
     response.headers.set('X-Frame-Options', 'DENY');
     response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-    response.headers.set('Content-Security-Policy', "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; frame-src https://www.instagram.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
+    response.headers.set('Content-Security-Policy', "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
     return response;
   }
 };

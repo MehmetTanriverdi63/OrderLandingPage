@@ -62,3 +62,9 @@ Die Checkout-Telefonnummer bleibt Pflicht und steht mit Telefon-Symbol in der Te
 ### Korrektur für Smartphone-Ausfüllhilfe
 
 Eindeutig erkennbare deutsche Mobilnummern ohne Vorwahl-Null (z. B. `15119137118`) werden vor der Übernahme und serverseitig vor dem Speichern zu `015119137118` ergänzt. Bereits internationale Nummern (`+49…`, `0049…`) bleiben erhalten. Ein deutsches Mobilformat mit `49` ohne Pluszeichen erhält das Pluszeichen. Unbekannte lokale Nummern und ausländische Landesvorwahlen werden nicht geraten oder umgeschrieben. Die Korrektur betrifft neue Bestellungen; historische Telefonnummern werden nicht rückwirkend verändert.
+
+## Unterschiedliche Bilder für alle Gerichte (08.11.2026)
+
+Die Zuordnung umfasst jetzt alle 84 aktiven Gerichte mit 84 unterschiedlichen Bildausschnitten. 31 neue Motive ergänzen fehlende Fotos und ersetzen bislang mehrfach verwendete Motive. Die sechs Salate zeigen ihre unterschiedlichen Zutaten; außerdem wurden Döner-Varianten, Falafel, Yufka, Lahmacun und die noch doppelten Pizza-/Pasta-Motive getrennt bebildert. Alle Bilder sind weiterhin illustrative KI-Beispielbilder, keine Restaurant- oder Instagram-Fotos.
+
+Die API korrigiert bekannte alte Standardbilder bereits anhand der Kartennummer, auch wenn die Remote-Migration noch aussteht. Eigene externe Produktbilder und andere Mandanten bleiben unverändert. `0007_distinct_menu_photos.sql` speichert die 31 neuen Zuordnungen dauerhaft; keine Preise oder Bestellungen werden geändert. Dafür im angemeldeten Codespace `node scripts/tool.mjs wrangler d1 migrations apply orders-db --remote` ausführen. Die vier neuen WebP-Tafeln benötigen kein externes Bilderhosting. Tests prüfen Vollständigkeit, eindeutige Ausschnitte, Dateiverfügbarkeit und die Bildproportionen im Browser.

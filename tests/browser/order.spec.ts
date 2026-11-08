@@ -16,6 +16,7 @@ test('Instagram deal → extras → cash checkout → private status → restaur
   await page.getByRole('button', { name: 'Weiter zur Kasse' }).click();
   await page.getByLabel('Dein Name', { exact: true }).fill('Browser Testgast');
   await page.getByLabel(/Telefonnummer/).fill('01234567890');
+  await page.locator('input[name=email]').fill('browser.test@example.com');
   await page.locator('select[name=pickup]').selectOption({ index: 1 });
   await page.locator('input[name=consent]').check();
   await page.getByRole('button', { name: /Testbestellung aufgeben/ }).click();
@@ -29,6 +30,8 @@ test('Instagram deal → extras → cash checkout → private status → restaur
   await admin.getByRole('button', { name: 'Anmelden', exact: true }).click();
   await expect(admin.getByRole('heading', { name: 'Deine Bestellungen' })).toBeVisible();
   const card = admin.locator('.admin-order').filter({ hasText: 'Browser Testgast' }).first();
+  await expect(card).toContainText('browser.test@example.com');
+  await expect(card).toContainText('Automatischer E-Mail-Versand noch nicht eingerichtet.');
   await card.getByRole('button', { name: 'Annehmen', exact: true }).click();
   await expect(card.getByRole('button', { name: 'Als abholbereit markieren' })).toBeVisible();
   await page.goto(trackingUrl);

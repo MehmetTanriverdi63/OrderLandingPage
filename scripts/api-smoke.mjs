@@ -50,6 +50,10 @@ const { body: modified } = await request('/menu'); assert.equal(modified.product
 await request('/admin/products/fries', { cookie, method: 'PATCH', data: { name: p.name, description: p.description, price: p.price, available: !!p.available } });
 await request('/admin/hours', { cookie, method: 'PUT', data: me.restaurant.hours.map(h => ({ ...h, day: 1 })), expected: 400 });
 await request('/admin/hours', { cookie, method: 'PUT', data: me.restaurant.hours });
+const {body:emailOrder}=await request('/orders',{data:{...input,requestId:crypto.randomUUID(),email:'api.gast@example.com'},expected:201});
+const {body:emailStatus}=await request(`/orders/${emailOrder.id}`,{token:emailOrder.token});assert.equal(emailStatus.emailProvided,true);assert.equal(emailStatus.emailEnabled,false);assert(!('customer_email' in emailStatus));
+const {body:emailAdmin}=await request('/admin/orders',{cookie});assert.equal(emailAdmin.orders.find(o=>o.id===emailOrder.id).customer_email,'api.gast@example.com');
+await request('/orders',{data:{...input,requestId:crypto.randomUUID(),email:'not-an-email'},expected:400});
 const {body:preview}=await request('/orders',{data:{...input,requestId:crypto.randomUUID(),paymentMethod:'online_demo'},expected:201});
 assert(!preview.paymentUrl);
 const {body:previewTracked}=await request(`/orders/${preview.id}`,{token:preview.token});assert.equal(previewTracked.payment_status,'test_only');assert.equal(previewTracked.fulfillment_method,'pickup');
@@ -58,4 +62,4 @@ for(const status of ['accepted','ready','completed'])await request(`/admin/order
 const {body:previewCompleted}=await request(`/orders/${preview.id}`,{token:preview.token});assert.equal(previewCompleted.payment_status,'test_only');
 await request('/admin/logout', { cookie, data: {} }); await request('/admin/orders', { cookie, expected: 401 });
 const csrf = await fetch(origin + '/api/orders', { method: 'POST', headers: { Origin: 'https://evil.example', 'Content-Type': 'application/json' }, body: JSON.stringify(input) }); assert.equal(csrf.status, 403);
-console.log('PASS: health, menu, auth/logout, price integrity, options, pickup, cash checkout, idempotency, private tracking, tenant isolation, status transitions/rejection, product price updates, hours, disabled Stripe, unpaid online preview, compatible order metadata, delivery minimum, CSRF.');
+console.log('PASS: health, menu, auth/logout, price integrity, options, pickup, cash checkout, idempotency, private tracking, tenant isolation, status transitions/rejection, product price updates, hours, disabled Stripe, unpaid online preview, compatible order metadata, delivery minimum, optional guest email, CSRF.');
